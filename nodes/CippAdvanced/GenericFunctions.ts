@@ -154,6 +154,7 @@ export async function cippApiRequest(
 	}
 
 	try {
+		// eslint-disable-next-line @n8n/community-nodes/no-http-request-with-manual-auth -- Azure AD client-credentials OAuth2 with in-memory token cache; httpRequestWithAuthentication does not support this flow
 		const response = await this.helpers.httpRequest(options);
 		if (response === null || response === undefined) {
 			return {} as IDataObject;

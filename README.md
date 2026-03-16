@@ -6,7 +6,7 @@
 Advanced n8n community node for [CIPP.app](https://cipp.app) — comprehensive Microsoft 365 multi-tenant management for MSPs.
 
 ![CIPP Node](https://img.shields.io/badge/n8n-Community%20Node-ff6d5a)
-![v1.0.0](https://img.shields.io/badge/Status-v1.0.0-brightgreen)
+![npm](https://img.shields.io/npm/v/n8n-nodes-cipp-advanced?label=latest&color=brightgreen)
 
 > **Acknowledgement:** This project builds on the foundation of [`@joshuanode/n8n-nodes-cipp`](https://github.com/ajoshuasmith/n8n-nodes-cipp) by [Joshua Smith](https://github.com/ajoshuasmith). The codebase was substantially rewritten with a modularised architecture, full API alignment audit against the CIPP OpenAPI spec, and expanded to **460 operations** across **28 resources** (~87% of the CIPP API surface).
 

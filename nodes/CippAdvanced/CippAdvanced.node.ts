@@ -17,7 +17,7 @@ import { router } from './actions/router';
 
 import { operationFields, resourceFields } from './descriptions';
 
-export class CippApp implements INodeType {
+export class CippAdvanced implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'CIPP Advanced',
 		name: 'cippAdvanced',

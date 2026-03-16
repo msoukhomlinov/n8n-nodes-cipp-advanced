@@ -2,6 +2,14 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.0.2] - 2026-03-16
+
+### Fixed
+
+- Renamed node file and directory to `CippAdvanced` to satisfy n8n filename convention lint rule
+- Suppressed false-positive `no-http-request-with-manual-auth` lint error (Azure AD client-credentials flow requires manual token handling)
+- Fixed sentence-case lint errors on Sherweb operation action strings
+
 ## [1.0.1] - 2026-03-16
 
 ### Fixed

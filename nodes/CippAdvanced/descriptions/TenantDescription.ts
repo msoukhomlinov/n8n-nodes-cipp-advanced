@@ -47,7 +47,7 @@ export const tenantOperations: INodeProperties[] = [
 				name: 'CSP License Action (Sherweb)',
 				value: 'cspLicenseAction',
 				description: 'Add or remove CSP licenses via Sherweb integration (requires Sherweb extension enabled and tenant mapped in CIPP)',
-				action: 'CSP license action via Sherweb',
+				action: 'Csp license action via sherweb',
 			},
 			{
 				name: 'Delete Tenant Group',
@@ -77,7 +77,7 @@ export const tenantOperations: INodeProperties[] = [
 				name: 'Get CSP Licenses (Sherweb)',
 				value: 'getCspLicenses',
 				description: 'Get CSP license subscriptions via Sherweb integration (requires Sherweb extension enabled and tenant mapped in CIPP)',
-				action: 'Get CSP licenses via Sherweb',
+				action: 'Get csp licenses via sherweb',
 			},
 			{
 				name: 'Get Details',
@@ -113,7 +113,7 @@ export const tenantOperations: INodeProperties[] = [
 				name: 'List CSP SKUs (Sherweb)',
 				value: 'listCspSkus',
 				description: 'List available CSP license SKU catalog via Sherweb integration (requires Sherweb extension enabled in CIPP)',
-				action: 'List CSP SKUs via Sherweb',
+				action: 'List csp skus via sherweb',
 			},
 			{
 				name: 'List Defender State',
