@@ -44,10 +44,6 @@ Or add to your n8n Docker container:
 RUN npm install -g n8n-nodes-cipp-advanced
 ```
 
-### n8n Cloud
-
-Community nodes can be installed via **Settings > Community Nodes > Install**.
-
 ## Credentials Setup
 
 1. **Create an Azure AD App Registration** for CIPP API access
