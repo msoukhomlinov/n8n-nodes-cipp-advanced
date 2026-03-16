@@ -53,7 +53,7 @@
     "n8nNodesApiVersion": 1,
     "strict": false,
     "credentials": [
-      "dist/credentials/CippApi.credentials.js"
+      "dist/credentials/CippAdvancedApi.credentials.js"
     ],
     "nodes": [
       "dist/nodes/Cipp/CippApp.node.js"

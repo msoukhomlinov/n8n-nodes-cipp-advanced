@@ -1,2 +1,2 @@
 export * from './nodes/Cipp/CippApp.node';
-export * from './credentials/CippApi.credentials';
+export * from './credentials/CippAdvancedApi.credentials';

@@ -1,8 +1,8 @@
 import type { Icon, ICredentialType, INodeProperties } from 'n8n-workflow';
 
-export class CippApi implements ICredentialType {
-	name = 'cippApi';
-	displayName = 'CIPP.app API';
+export class CippAdvancedApi implements ICredentialType {
+	name = 'cippAdvancedApi';
+	displayName = 'CIPP Advanced API';
 	icon: Icon = 'file:cipp.svg';
 	documentationUrl = 'https://docs.cipp.app/api-documentation/setup-and-authentication';
 

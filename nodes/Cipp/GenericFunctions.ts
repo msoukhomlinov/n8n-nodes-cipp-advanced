@@ -129,7 +129,7 @@ export async function cippApiRequest(
 	body: IDataObject = {},
 	query: IDataObject = {},
 ): Promise<IDataObject | IDataObject[]> {
-	const credentials = validateCredentials(await this.getCredentials('cippApi'));
+	const credentials = validateCredentials(await this.getCredentials('cippAdvancedApi'));
 
 	// Normalize base URL
 	const baseUrl = credentials.baseUrl.replace(/\/$/, '');

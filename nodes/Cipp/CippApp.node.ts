@@ -17,7 +17,7 @@ import { router } from './actions/router';
 
 import { operationFields, resourceFields } from './descriptions';
 
-export class Cipp implements INodeType {
+export class CippApp implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'CIPP Advanced',
 		name: 'cippAdvanced',
@@ -33,7 +33,7 @@ export class Cipp implements INodeType {
 		outputs: [NodeConnectionTypes.Main],
 		credentials: [
 			{
-				name: 'cippApi',
+				name: 'cippAdvancedApi',
 				required: true,
 				testedBy: 'cippApiCredentialTest',
 			},
@@ -196,7 +196,7 @@ export class Cipp implements INodeType {
 
 	methods = {
 		credentialTest: {
-			async cippApiCredentialTest(
+			async cippAdvancedApiCredentialTest(
 				this: ICredentialTestFunctions,
 				credential: ICredentialsDecrypted,
 			): Promise<INodeCredentialTestResult> {
