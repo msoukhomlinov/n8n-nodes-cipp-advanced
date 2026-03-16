@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-cipp-advanced",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "Advanced n8n community node for CIPP.app - Microsoft 365 multi-tenant management (460 operations, 28 resources)",
   "license": "MIT",
   "keywords": [
@@ -39,7 +39,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=18.17.0"
+    "node": ">=20.15"
   },
   "scripts": {
     "build": "n8n-node build",

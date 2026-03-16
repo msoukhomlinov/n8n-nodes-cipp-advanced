@@ -28,6 +28,7 @@ Advanced n8n community node for [CIPP.app](https://cipp.app) — comprehensive M
 - **Tenant Selector** — Searchable dropdown to select tenants by name
 - **Field Picker** — Multi-select for user properties (no need to memorise Graph API field names)
 - **Smart Defaults** — Sensible default selections to keep responses fast and small
+- **AI Agent Compatible** — Works as a tool in n8n AI agent workflows (`usableAsTool`)
 
 ## Installation
 

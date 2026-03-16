@@ -1,6 +1,6 @@
 import type { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
-import { getTenantFilter, listWithSlice, postAction } from '../GenericFunctions';
+import { cippApiRequest, getTenantFilter, listWithSlice, postAction } from '../GenericFunctions';
 
 export async function execute(
 	context: IExecuteFunctions,
@@ -30,14 +30,17 @@ export async function execute(
 		const phoneNumberType = context.getNodeParameter('phoneNumberType', i, '') as string;
 		const locationOnly = context.getNodeParameter('locationOnly', i) as boolean;
 
-		responseData = await postAction(context, i,
+		responseData = await cippApiRequest.call(context,
+			'POST',
 			'/api/ExecTeamsVoicePhoneNumberAssignment',
 			{
+				TenantFilter: tenantFilter,
 				PhoneNumber: phoneNumber,
 				PhoneNumberType: phoneNumberType,
-				LocationOnly: locationOnly,
-				UserPrincipalNameOrLocationId: voiceUser,
+				locationOnly: String(locationOnly),
+				input: voiceUser,
 			},
+			{},
 		);
 	} else if (operation === 'unassignNumber') {
 		const phoneNumber = context.getNodeParameter('phoneNumber', i) as string;

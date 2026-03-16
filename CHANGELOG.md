@@ -2,6 +2,33 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.0.4] - 2026-03-16
+
+### Added
+
+- **Normalize Numeric Strings** option — global opt-in toggle that converts string values containing plain decimal numbers (e.g. `"4"`) to actual numbers in API responses
+
+### Fixed
+
+- **normalizeNumericValues**: Use strict regex to reject hex strings (`"0x1F"`), whitespace-only (`"  "`), and scientific notation — only plain decimals are converted
+- **normalizeNumericValues**: Also normalize string numbers inside arrays of primitives (e.g. `["4", "5"]`)
+- **voice**: Send `locationOnly` as string per OpenAPI spec (was boolean)
+
+## [1.0.3] - 2026-03-16
+
+### Fixed
+
+- **application**: Use `selectedTenants` instead of `tenantFilter` for addStore, addChocolatey, addMsp, addOffice per OpenAPI spec
+- **application**: Use lowercase `description` for addStore/addChocolatey per spec
+- **application**: Use `CustomGroup` instead of `GroupNames` for addStore, addChocolatey, addMsp, addOffice per spec
+- **voice**: Use `TenantFilter` (PascalCase), `input`, and `locationOnly` for assignNumber per spec
+
+### Improved
+
+- Bump minimum Node.js engine to >=20.15 (Node 18 is EOL)
+- Add `endOfLine: 'lf'` to Prettier config
+- Document AI agent compatibility (`usableAsTool`) in README
+
 ## [1.0.2] - 2026-03-16
 
 ### Fixed

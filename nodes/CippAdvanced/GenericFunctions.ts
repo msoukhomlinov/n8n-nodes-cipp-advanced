@@ -397,6 +397,57 @@ export async function postAction(
 }
 
 /**
+ * Returns true if the string is a plain decimal number (integer or float, optional sign).
+ * Rejects hex, octal, whitespace-only, empty, and scientific notation strings.
+ */
+const NUMERIC_PATTERN = /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/;
+
+function isNumericString(value: string): boolean {
+	return NUMERIC_PATTERN.test(value);
+}
+
+/**
+ * Converts a string to a number if it passes isNumericString, otherwise returns it unchanged.
+ */
+function coerceNumeric(value: string): string | number {
+	return isNumericString(value) ? Number(value) : value;
+}
+
+/**
+ * Recursively converts string values that are plain decimal numbers into actual numbers.
+ * Handles nested objects and arrays. Leaves empty strings, hex, whitespace-only,
+ * booleans, dates, and UUIDs unchanged.
+ */
+export function normalizeNumericValues(
+	data: IDataObject | IDataObject[],
+): IDataObject | IDataObject[] {
+	if (Array.isArray(data)) {
+		return data.map((item) => normalizeNumericValues(item) as IDataObject);
+	}
+	const result: IDataObject = {};
+	for (const [key, value] of Object.entries(data)) {
+		if (typeof value === 'string') {
+			result[key] = coerceNumeric(value);
+		} else if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+			result[key] = normalizeNumericValues(value as IDataObject) as IDataObject;
+		} else if (Array.isArray(value)) {
+			result[key] = value.map((item) => {
+				if (typeof item === 'object' && item !== null) {
+					return normalizeNumericValues(item as IDataObject);
+				}
+				if (typeof item === 'string') {
+					return coerceNumeric(item);
+				}
+				return item;
+			});
+		} else {
+			result[key] = value;
+		}
+	}
+	return result;
+}
+
+/**
  * Builds an OData-style query string from base params and OData options.
  */
 export function buildOdataQuery(

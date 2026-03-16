@@ -108,17 +108,17 @@ export async function execute(
 		const assignTo = context.getNodeParameter('assignTo', i) as string;
 
 		const body: IDataObject = {
-			tenantFilter,
+			selectedTenants: tenantFilter,
 			PackageName: packageId,
 			ApplicationName: appName,
-			Description: appDescription,
+			description: appDescription,
 			UninstallApp: uninstall,
 			AssignTo: assignTo,
 		};
 
 		if (assignTo === 'customGroup') {
 			const customGroups = context.getNodeParameter('customGroupNames', i, '') as string;
-			body.GroupNames = customGroups.split(',').map((g: string) => g.trim());
+			body.CustomGroup = customGroups.split(',').map((g: string) => g.trim());
 		}
 
 		responseData = await cippApiRequest.call(
@@ -137,10 +137,10 @@ export async function execute(
 		const chocoOptions = context.getNodeParameter('chocoOptions', i, {}) as IDataObject;
 
 		const body: IDataObject = {
-			tenantFilter,
+			selectedTenants: tenantFilter,
 			PackageName: packageName,
 			ApplicationName: appName,
-			Description: appDescription,
+			description: appDescription,
 			UninstallApp: uninstall,
 			AssignTo: assignTo,
 			...chocoOptions,
@@ -148,7 +148,7 @@ export async function execute(
 
 		if (assignTo === 'customGroup') {
 			const customGroups = context.getNodeParameter('customGroupNames', i, '') as string;
-			body.GroupNames = customGroups.split(',').map((g: string) => g.trim());
+			body.CustomGroup = customGroups.split(',').map((g: string) => g.trim());
 		}
 
 		responseData = await cippApiRequest.call(
@@ -165,7 +165,7 @@ export async function execute(
 		const assignTo = context.getNodeParameter('assignTo', i) as string;
 
 		const body: IDataObject = {
-			tenantFilter,
+			selectedTenants: tenantFilter,
 			RMMName: rmmTool,
 			DisplayName: mspDisplayName,
 			params: parseJsonPayload(context.getNode(), rmmParameters, 'RMM Parameters', i),
@@ -174,7 +174,7 @@ export async function execute(
 
 		if (assignTo === 'customGroup') {
 			const customGroups = context.getNodeParameter('customGroupNames', i, '') as string;
-			body.GroupNames = customGroups.split(',').map((g: string) => g.trim());
+			body.CustomGroup = customGroups.split(',').map((g: string) => g.trim());
 		}
 
 		responseData = await cippApiRequest.call(
@@ -191,7 +191,7 @@ export async function execute(
 		const officeOptions = context.getNodeParameter('officeOptions', i, {}) as IDataObject;
 
 		const body: IDataObject = {
-			tenantFilter,
+			selectedTenants: tenantFilter,
 			excludedApps,
 			updateChannel,
 			AssignTo: assignTo,
@@ -200,7 +200,7 @@ export async function execute(
 
 		if (assignTo === 'customGroup') {
 			const customGroups = context.getNodeParameter('customGroupNames', i, '') as string;
-			body.GroupNames = customGroups.split(',').map((g: string) => g.trim());
+			body.CustomGroup = customGroups.split(',').map((g: string) => g.trim());
 		}
 
 		responseData = await cippApiRequest.call(

@@ -12,7 +12,7 @@ import type {
 } from 'n8n-workflow';
 import { NodeConnectionTypes } from 'n8n-workflow';
 
-import { getTenantList } from './GenericFunctions';
+import { getTenantList, normalizeNumericValues } from './GenericFunctions';
 import { router } from './actions/router';
 
 import { operationFields, resourceFields } from './descriptions';
@@ -35,7 +35,7 @@ export class CippAdvanced implements INodeType {
 			{
 				name: 'cippAdvancedApi',
 				required: true,
-				testedBy: 'cippApiCredentialTest',
+				testedBy: 'cippAdvancedApiCredentialTest',
 			},
 		],
 		properties: [
@@ -190,6 +190,13 @@ export class CippAdvanced implements INodeType {
 			},
 			...operationFields,
 			...resourceFields,
+			{
+				displayName: 'Normalize Numeric Strings',
+				name: 'normalizeNumbers',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to convert string values that contain numbers (e.g. "4") to actual numbers. Useful when the API returns inconsistent types.',
+			},
 		],
 		usableAsTool: true,
 	};
@@ -302,7 +309,12 @@ export class CippAdvanced implements INodeType {
 				const resource = this.getNodeParameter('resource', i) as string;
 				const operation = this.getNodeParameter('operation', i) as string;
 
-				const responseData = await router(this, resource, operation, i);
+				let responseData = await router(this, resource, operation, i);
+
+				const normalizeNumbers = this.getNodeParameter('normalizeNumbers', i, false) as boolean;
+				if (normalizeNumbers && responseData) {
+					responseData = normalizeNumericValues(responseData);
+				}
 
 				const executionData = this.helpers.constructExecutionMetaData(
 					this.helpers.returnJsonArray(responseData as IDataObject[]),
