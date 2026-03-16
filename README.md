@@ -10,22 +10,6 @@ Advanced n8n community node for [CIPP.app](https://cipp.app) — comprehensive M
 
 > **Based on** [`@joshuanode/n8n-nodes-cipp`](https://github.com/ajoshuasmith/n8n-nodes-cipp) by [Joshua Smith](https://github.com/ajoshuasmith). This project was originally forked from the upstream node, then substantially rewritten — modularised architecture, API alignment audit, and expanded from ~133 to **460 operations** across **28 resources** (~87% of the CIPP API surface).
 
-> **Beta Notice**: This node is currently in beta. Some operations may be incomplete or require adjustments. Use in production at your own risk.
->
-> **Contributions Welcome!** We welcome bug reports, feature requests, and pull requests. If you encounter issues or have improvements, please [open an issue](https://github.com/msoukhomlinov/n8n-nodes-cipp-advanced/issues) on GitHub.
-
-## What's Different from the Original?
-
-| | Original (`n8n-nodes-cipp`) | This (`n8n-nodes-cipp-advanced`) |
-|---|---|---|
-| **Operations** | ~133 | **460** |
-| **Resources** | 14 | **28** |
-| **API coverage** | ~27% | **~87%** |
-| **Architecture** | Monolithic single-file node | Modular action/description pattern (28 handlers) |
-| **API alignment** | Partial — multiple param mismatches | Full audit against OpenAPI spec |
-| **Shared helpers** | None | `listWithSlice`, `postAction`, `buildOdataQuery`, `validateCredentials` |
-| **Token caching** | Basic | Size-limited with expiry eviction |
-
 ## Features
 
 **460 operations** across 28 resources covering:
