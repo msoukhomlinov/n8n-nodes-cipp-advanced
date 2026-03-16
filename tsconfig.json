@@ -3,13 +3,12 @@
 		"strict": true,
 		"module": "commonjs",
 		"moduleResolution": "node",
-		"target": "ES2022",
-		"lib": ["ES2022", "DOM"],
+		"target": "es2019",
+		"lib": ["es2019", "es2020", "es2022.error"],
 		"declaration": true,
 		"declarationMap": true,
 		"sourceMap": true,
 		"outDir": "./dist",
-		"rootDir": ".",
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"skipLibCheck": true,
@@ -18,7 +17,8 @@
 	"include": [
 		"credentials/**/*.ts",
 		"nodes/**/*.ts",
-		"index.ts"
+		"nodes/**/*.json",
+		"package.json"
 	],
 	"exclude": [
 		"node_modules",

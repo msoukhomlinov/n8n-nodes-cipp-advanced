@@ -2,6 +2,14 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.0.1] - 2026-03-16
+
+### Fixed
+
+- Removed legacy `.eslintrc.js` (conflicted with flat `eslint.config.mjs`)
+- Aligned tsconfig with `@n8n/node-cli` template: `es2019` target, dropped `DOM` lib, removed `rootDir` and `index.ts` from include
+- Added `typecheck`, `format`, `format:fix` scripts and `prepublishOnly` publish gate
+
 ## [1.0.0] - 2026-03-16
 
 First public release of `n8n-nodes-cipp-advanced` — a comprehensive n8n community node for [CIPP.app](https://cipp.app) Microsoft 365 multi-tenant management.
