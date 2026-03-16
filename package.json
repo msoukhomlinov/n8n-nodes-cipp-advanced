@@ -1,0 +1,71 @@
+{
+  "name": "n8n-nodes-cipp-advanced",
+  "version": "0.1.0",
+  "description": "Advanced n8n community node for CIPP.app - Microsoft 365 multi-tenant management (460 operations, 28 resources)",
+  "license": "MIT",
+  "keywords": [
+    "n8n-community-node-package",
+    "cipp",
+    "microsoft-365",
+    "m365",
+    "msp",
+    "multi-tenant",
+    "azure-ad",
+    "intune",
+    "exchange",
+    "conditional-access",
+    "defender",
+    "sharepoint",
+    "teams"
+  ],
+  "homepage": "https://github.com/msoukhomlinov/n8n-nodes-cipp-advanced",
+  "author": {
+    "name": "Max Soukhomlinov",
+    "email": "maxs@intellectit.com.au"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msoukhomlinov/n8n-nodes-cipp-advanced.git"
+  },
+  "bugs": {
+    "url": "https://github.com/msoukhomlinov/n8n-nodes-cipp-advanced/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": false,
+    "credentials": [
+      "dist/credentials/CippApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Cipp/CippApp.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": ">=0.17.0",
+    "eslint": "9.32.0",
+    "prettier": "3.6.2",
+    "typescript": "5.9.2"
+  },
+  "peerDependencies": {
+    "n8n-workflow": ">=1.60.0"
+  }
+}
