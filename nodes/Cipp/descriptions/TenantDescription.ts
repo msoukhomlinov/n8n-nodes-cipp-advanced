@@ -264,26 +264,21 @@ export const tenantFields: INodeProperties[] = [
 		],
 	},
 	{
-		displayName: 'Options',
-		name: 'licenseOptions',
-		type: 'collection',
-		placeholder: 'Add Option',
-		default: {},
+		displayName: 'Output Mode',
+		name: 'licenseOutputMode',
+		type: 'options',
+		options: [
+			{ name: 'Full', value: 'full', description: 'Raw API response with all nested arrays' },
+			{ name: 'MSP Summary', value: 'mspSummary', description: 'Flattened output with computed MSP metrics (no nested arrays)' },
+		],
+		default: 'full',
 		displayOptions: {
 			show: {
 				resource: ['tenant'],
 				operation: ['getLicenses'],
 			},
 		},
-		options: [
-			{
-				displayName: 'Summary Only',
-				name: 'summaryOnly',
-				type: 'boolean',
-				default: false,
-				description: 'Whether to return only license counts without the full list of assigned users and groups (reduces output size)',
-			},
-		],
+		description: 'Full returns the raw API response. MSP Summary flattens the data and adds computed columns like UtilizationPct, RenewalUrgency, and AssignmentMethod.',
 	},
 
 	// ── Clear Cache ──

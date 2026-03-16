@@ -61,7 +61,7 @@ For detailed authentication setup, see the [CIPP API Documentation](https://docs
 |----------|-----|----------------|
 | **User** | 50 | CRUD, edit (23 fields), guest/bulk add, BEC check, JIT admin, 9 detail lists, photo, licenses |
 | **Mailbox** | 46 | 9 list ops, permissions, settings, holds, archive, shared/mobile, message trace, EXO request, restore |
-| **Tenant** | 33 | Details, edit, add/onboard/offboard, domains, service health, secure score, tenant groups |
+| **Tenant** | 33 | Details, edit, add/onboard/offboard, domains, service health, secure score, tenant groups, license MSP summary |
 | **Policy** | 32 | Assignment filters, Intune templates/scripts/settings, Defender deployment, compliance lists |
 | **Teams Shift** | 28 | Shifts, open shifts, scheduling groups, time-off, swap/offer requests (requires custom CIPP-API fork) |
 | **Application** | 24 | WinGet/Store/Choco/MSP/Office/Win32 apps, VPP sync, app approval, multi-tenant apps |
@@ -107,6 +107,18 @@ Tenant: Select from dropdown
 Fields to Return: Display Name, User Principal Name, Mail, Sign-In Activity
 Return All: true
 ```
+
+### License Utilisation Report (MSP Summary)
+
+```
+Resource: Tenant
+Operation: Get Licenses
+Tenant: Select from dropdown
+Output Mode: MSP Summary
+Return All: true
+```
+
+> Returns one flat row per license with `UtilizationPct`, `RenewalUrgency`, `AssignmentMethod`, and other computed metrics — ideal for dashboards and alerting workflows.
 
 ### Custom Graph Request
 

@@ -42,18 +42,72 @@ export async function execute(
 		);
 	} else if (operation === 'getLicenses') {
 		const tenantFilter = getTenantFilter(context, i);
-		const licenseOptions = context.getNodeParameter('licenseOptions', i, {}) as IDataObject;
+		const licenseOutputMode = context.getNodeParameter('licenseOutputMode', i, 'full') as string;
 
 		responseData = await listWithSlice(context, i, 'GET', '/api/ListLicenses', {}, { tenantFilter },
 		);
 
-		// Strip out AssignedUsers and AssignedGroups if summaryOnly is enabled
-		if (licenseOptions.summaryOnly && Array.isArray(responseData)) {
+		if (licenseOutputMode === 'mspSummary' && Array.isArray(responseData)) {
 			responseData = (responseData as IDataObject[]).map((license) => {
-				const summary = { ...license };
-				delete summary.AssignedUsers;
-				delete summary.AssignedGroups;
-				return summary;
+				const countUsed = Number(license.CountUsed) || 0;
+				const totalLicenses = Number(license.TotalLicenses) || 0;
+				const unusedLicenses = totalLicenses - countUsed;
+				const utilizationPct = totalLicenses > 0
+					? Math.round((countUsed / totalLicenses) * 100)
+					: 0;
+
+				const termInfo = Array.isArray(license.TermInfo) ? license.TermInfo[0] as IDataObject | undefined : undefined;
+				const term = termInfo?.Term as string | undefined;
+				const daysUntilRenew = termInfo?.DaysUntilRenew != null ? Number(termInfo.DaysUntilRenew) : undefined;
+				const renewalDate = termInfo?.NextLifecycle as string | undefined;
+				const isTrial = termInfo?.IsTrial as boolean | undefined;
+
+				let renewalUrgency: string;
+				if (daysUntilRenew == null) {
+					renewalUrgency = 'Unknown';
+				} else if (daysUntilRenew <= 7) {
+					renewalUrgency = 'Critical';
+				} else if (daysUntilRenew <= 30) {
+					renewalUrgency = 'Soon';
+				} else if (daysUntilRenew <= 90) {
+					renewalUrgency = 'Normal';
+				} else {
+					renewalUrgency = 'Distant';
+				}
+
+				const assignedUsers = Array.isArray(license.AssignedUsers) ? license.AssignedUsers : [];
+				const assignedGroups = Array.isArray(license.AssignedGroups) ? license.AssignedGroups : [];
+				const assignedUserCount = assignedUsers.length;
+				const assignedGroupCount = assignedGroups.length;
+
+				let assignmentMethod: string;
+				if (assignedUserCount > 0 && assignedGroupCount > 0) {
+					assignmentMethod = 'Mixed';
+				} else if (assignedUserCount > 0) {
+					assignmentMethod = 'Direct Only';
+				} else if (assignedGroupCount > 0) {
+					assignmentMethod = 'Group Only';
+				} else {
+					assignmentMethod = 'Unassigned';
+				}
+
+				return {
+					Tenant: license.Tenant,
+					License: license.License,
+					skuId: license.skuId,
+					CountUsed: countUsed,
+					TotalLicenses: totalLicenses,
+					UnusedLicenses: unusedLicenses,
+					UtilizationPct: utilizationPct,
+					Term: term,
+					DaysUntilRenew: daysUntilRenew,
+					RenewalDate: renewalDate,
+					RenewalUrgency: renewalUrgency,
+					IsTrial: isTrial,
+					AssignedUserCount: assignedUserCount,
+					AssignedGroupCount: assignedGroupCount,
+					AssignmentMethod: assignmentMethod,
+				} as IDataObject;
 			});
 		}
 	} else if (operation === 'getCspLicenses') {

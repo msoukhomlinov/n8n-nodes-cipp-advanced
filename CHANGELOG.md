@@ -8,6 +8,10 @@ First public release of `n8n-nodes-cipp-advanced` — a comprehensive n8n commun
 
 > **Acknowledgement:** This project builds on the foundation of [`@joshuanode/n8n-nodes-cipp`](https://github.com/ajoshuasmith/n8n-nodes-cipp) by [Joshua Smith](https://github.com/ajoshuasmith). The codebase was substantially rewritten with a modularised architecture, full API alignment audit, and greatly expanded endpoint coverage.
 
+### Added
+
+- **License MSP Summary mode** — `Tenant > Get Licenses` now has an Output Mode dropdown (`Full` / `MSP Summary`). MSP Summary flattens each license into a single row with computed columns: `UnusedLicenses`, `UtilizationPct`, `RenewalUrgency` (Critical/Soon/Normal/Distant), `AssignedUserCount`, `AssignedGroupCount`, `AssignmentMethod` (Direct Only/Group Only/Mixed/Unassigned), and extracted `Term`/`DaysUntilRenew`/`RenewalDate`/`IsTrial` from TermInfo. Full mode returns the raw API response unchanged (backward-compatible default).
+
 ### Highlights
 
 - **460 operations** across **28 resources** covering ~87% of the CIPP API surface
