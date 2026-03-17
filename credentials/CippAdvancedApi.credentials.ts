@@ -43,6 +43,28 @@ export class CippAdvancedApi implements ICredentialType {
 			required: true,
 			description: 'The Client Secret from your CIPP-SAM Azure AD App Registration',
 		},
+		{
+			displayName: 'Enable Tenant List Cache',
+			name: 'enableTenantCache',
+			type: 'boolean',
+			default: true,
+			description:
+				'Cache the tenant list to speed up the tenant dropdown. Disable if you need real-time tenant list updates.',
+		},
+		{
+			displayName: 'Tenant Cache TTL (Minutes)',
+			name: 'tenantCacheTtl',
+			type: 'number',
+			typeOptions: { minValue: 1, maxValue: 1440 },
+			default: 30,
+			displayOptions: {
+				show: {
+					enableTenantCache: [true],
+				},
+			},
+			description:
+				'How long to cache the tenant list in minutes. Newly onboarded tenants won\'t appear in the dropdown until the cache expires or n8n is restarted.',
+		},
 	];
 
 	// Credential testing is handled by the node via credentialTest method
