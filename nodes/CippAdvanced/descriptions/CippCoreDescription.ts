@@ -3,7 +3,8 @@ import { tenantField, returnAllField, limitField } from './DescriptionHelpers';
 
 const RESOURCE = 'cippCore';
 
-const LIST_OPS = ['getAppStatus', 'listFunctionStats'];
+const LIST_OPS = ['getAppStatus', 'listFunctionStats', 'getCippAlerts', 'listLogs', 'listKnownIpDb'];
+const TENANT_OPS = ['getAppStatus', 'listFunctionStats', 'listKnownIpDb'];
 
 export const cippCoreOperations: INodeProperties[] = [
 	{
@@ -42,6 +43,12 @@ export const cippCoreOperations: INodeProperties[] = [
 				action: 'Get external tenant info',
 			},
 			{
+				name: 'Get CIPP Alerts',
+				value: 'getCippAlerts',
+				description: 'Get CIPP platform health monitoring alerts',
+				action: 'Get CIPP alerts',
+			},
+			{
 				name: 'Get Version',
 				value: 'getVersion',
 				description: 'Get the current CIPP version',
@@ -58,6 +65,18 @@ export const cippCoreOperations: INodeProperties[] = [
 				value: 'listFunctionStats',
 				description: 'List function execution statistics for a tenant',
 				action: 'List function stats',
+			},
+			{
+				name: 'List Known IP Database',
+				value: 'listKnownIpDb',
+				description: 'List known IP database entries for a tenant',
+				action: 'List known IP database',
+			},
+			{
+				name: 'List Logs',
+				value: 'listLogs',
+				description: 'List CIPP audit and monitoring logs with filters',
+				action: 'List logs',
 			},
 			{
 				name: 'List GitHub Release Notes',
@@ -90,7 +109,7 @@ export const cippCoreOperations: INodeProperties[] = [
 
 export const cippCoreFields: INodeProperties[] = [
 	// ── Shared fields ──────────────────────────────────────────────────
-	tenantField(RESOURCE, LIST_OPS),
+	tenantField(RESOURCE, TENANT_OPS),
 	returnAllField(RESOURCE, LIST_OPS),
 	limitField(RESOURCE, LIST_OPS),
 
@@ -432,6 +451,124 @@ export const cippCoreFields: INodeProperties[] = [
 				type: 'boolean',
 				default: false,
 				description: 'Whether to enable function offloading',
+			},
+		],
+	},
+
+	// ── getCippAlerts ──────────────────────────────────────────────
+	{
+		displayName: 'Additional Fields',
+		name: 'cippAlertsFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: [RESOURCE],
+				operation: ['getCippAlerts'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Local Version',
+				name: 'localversion',
+				type: 'string',
+				default: '',
+				description: 'Local CIPP version for comparison',
+			},
+		],
+	},
+
+	// ── listLogs ───────────────────────────────────────────────────
+	{
+		displayName: 'Filters',
+		name: 'logFilters',
+		type: 'collection',
+		placeholder: 'Add Filter',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: [RESOURCE],
+				operation: ['listLogs'],
+			},
+		},
+		options: [
+			{
+				displayName: 'API',
+				name: 'API',
+				type: 'string',
+				default: '',
+				description: 'Filter by API name',
+			},
+			{
+				displayName: 'Date Filter',
+				name: 'DateFilter',
+				type: 'string',
+				default: '',
+				description: 'Predefined date filter',
+			},
+			{
+				displayName: 'End Date',
+				name: 'EndDate',
+				type: 'string',
+				default: '',
+				description: 'End date for range filtering (ISO 8601)',
+			},
+			{
+				displayName: 'Filter',
+				name: 'Filter',
+				type: 'string',
+				default: '',
+				description: 'General filter expression',
+			},
+			{
+				displayName: 'Log Entry ID',
+				name: 'logentryid',
+				type: 'string',
+				default: '',
+				description: 'Filter by specific log entry ID',
+			},
+			{
+				displayName: 'Scheduled Task ID',
+				name: 'ScheduledTaskId',
+				type: 'string',
+				default: '',
+				description: 'Filter by scheduled task ID',
+			},
+			{
+				displayName: 'Severity',
+				name: 'Severity',
+				type: 'string',
+				default: '',
+				description: 'Filter by severity level',
+			},
+			{
+				displayName: 'Standard Template ID',
+				name: 'StandardTemplateId',
+				type: 'string',
+				default: '',
+				description: 'Filter by standard template ID',
+			},
+			{
+				displayName: 'Start Date',
+				name: 'StartDate',
+				type: 'string',
+				default: '',
+				description: 'Start date for range filtering (ISO 8601)',
+			},
+			{
+				displayName: 'Tenant',
+				name: 'Tenant',
+				type: 'string',
+				default: '',
+				description: 'Filter by tenant domain',
+			},
+			{
+				displayName: 'User',
+				name: 'User',
+				type: 'string',
+				default: '',
+				description: 'Filter by user',
 			},
 		],
 	},

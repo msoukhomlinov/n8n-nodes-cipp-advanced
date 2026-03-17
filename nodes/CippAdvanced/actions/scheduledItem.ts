@@ -33,12 +33,12 @@ export async function execute(
 		const scheduledTime = context.getNodeParameter('scheduledTime', i, '') as string;
 
 		const body: IDataObject = {
-			TenantFilter: tenantFilter || 'AllTenants',
+			tenantFilter: tenantFilter || 'AllTenants',
 			Name: jobName,
-			Command: command,
+			command,
 			Recurrence: recurrence,
-			Parameters: parseJsonPayload(context.getNode(), parameters, 'Parameters', i),
-			PostExecution: postExecution,
+			parameters: parseJsonPayload(context.getNode(), parameters, 'Parameters', i),
+			postExecution,
 		};
 
 		if (scheduledTime) {
@@ -88,6 +88,10 @@ export async function execute(
 				id: rowKey,
 			},
 			{},
+		);
+	} else if (operation === 'triggerBillingRun') {
+		responseData = await cippApiRequest.call(
+			context, 'GET', '/api/ExecSchedulerBillingRun', {}, {},
 		);
 	} else {
 		throw new NodeOperationError(context.getNode(), `Unknown operation: ${operation}`, { itemIndex: i });

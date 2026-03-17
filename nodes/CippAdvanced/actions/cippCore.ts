@@ -128,6 +128,39 @@ export async function execute(
 		return cippApiRequest.call(context, 'GET', '/api/ListGitHubReleaseNotes', {}, qs);
 	}
 
+	// ══════════════════════════════════════════════════════════════
+	// Monitoring
+	// ══════════════════════════════════════════════════════════════
+
+	if (operation === 'getCippAlerts') {
+		const fields = context.getNodeParameter('cippAlertsFields', i, {}) as IDataObject;
+		const qs: IDataObject = {};
+		if (fields.localversion) qs.localversion = fields.localversion;
+		return listWithSlice(context, i, 'GET', '/api/GetCippAlerts', {}, qs);
+	}
+
+	if (operation === 'listLogs') {
+		const filters = context.getNodeParameter('logFilters', i, {}) as IDataObject;
+		const qs: IDataObject = {};
+		if (filters.Tenant) qs.Tenant = filters.Tenant;
+		if (filters.Severity) qs.Severity = filters.Severity;
+		if (filters.StartDate) qs.StartDate = filters.StartDate;
+		if (filters.EndDate) qs.EndDate = filters.EndDate;
+		if (filters.API) qs.API = filters.API;
+		if (filters.User) qs.User = filters.User;
+		if (filters.Filter) qs.Filter = filters.Filter;
+		if (filters.DateFilter) qs.DateFilter = filters.DateFilter;
+		if (filters.logentryid) qs.logentryid = filters.logentryid;
+		if (filters.ScheduledTaskId) qs.ScheduledTaskId = filters.ScheduledTaskId;
+		if (filters.StandardTemplateId) qs.StandardTemplateId = filters.StandardTemplateId;
+		return listWithSlice(context, i, 'GET', '/api/ListLogs', {}, qs);
+	}
+
+	if (operation === 'listKnownIpDb') {
+		const tenantFilter = getTenantFilter(context, i);
+		return listWithSlice(context, i, 'GET', '/api/ListKnownIPDb', {}, { tenantFilter });
+	}
+
 	throw new NodeOperationError(
 		context.getNode(), `Unknown operation: ${operation}`, { itemIndex: i },
 	);

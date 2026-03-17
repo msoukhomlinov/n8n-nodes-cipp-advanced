@@ -37,6 +37,12 @@ export const scheduledItemOperations: INodeProperties[] = [
 				description: 'Remove a scheduled item',
 				action: 'Remove scheduled item',
 			},
+			{
+				name: 'Trigger Billing Run',
+				value: 'triggerBillingRun',
+				description: 'Trigger a scheduler billing run',
+				action: 'Trigger billing run',
+			},
 		],
 		default: 'getAll',
 	},
