@@ -40,7 +40,7 @@ export class CippAdvancedAiTools implements INodeType {
 		usableAsTool: true,
 		inputs: [],
 		outputs: [{ type: 'ai_tool' as NodeConnectionType, displayName: 'Tool' }],
-		credentials: [{ name: 'cippAdvancedApi', required: true }],
+		credentials: [{ name: 'cippAdvancedApi', required: true, testedBy: 'cippAdvancedApiCredentialTest' }],
 		properties: [
 			{
 				displayName: 'Resource Name or ID',
