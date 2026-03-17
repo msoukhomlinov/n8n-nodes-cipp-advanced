@@ -11,7 +11,7 @@ import type {
 
 import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
-import type { IAuthToken, ICippCredentials, ITenant } from './types';
+import type { IAuthToken, ICippCredentials, ITenant, ITenantCacheEntry } from './types';
 
 function validateCredentials(creds: IDataObject): ICippCredentials {
 	const baseUrl = creds.baseUrl as string;
@@ -21,7 +21,9 @@ function validateCredentials(creds: IDataObject): ICippCredentials {
 	if (!baseUrl || !tenantId || !clientId || !clientSecret) {
 		throw new Error('Missing required CIPP API credentials (baseUrl, tenantId, clientId, clientSecret)');
 	}
-	return { baseUrl, tenantId, clientId, clientSecret };
+	const enableTenantCache = creds.enableTenantCache !== false;
+	const tenantCacheTtl = typeof creds.tenantCacheTtl === 'number' ? creds.tenantCacheTtl : 30;
+	return { baseUrl, tenantId, clientId, clientSecret, enableTenantCache, tenantCacheTtl };
 }
 
 // Token cache to avoid repeated authentication calls
@@ -33,6 +35,19 @@ function evictExpiredTokens(): void {
 	for (const [key, token] of tokenCache) {
 		if (token.expiresAt <= now) {
 			tokenCache.delete(key);
+		}
+	}
+}
+
+// Tenant list cache to avoid repeated ListTenants calls in the dropdown
+const tenantCache = new Map<string, ITenantCacheEntry>();
+const MAX_TENANT_CACHE_SIZE = 50;
+
+function evictExpiredTenantEntries(): void {
+	const now = Date.now();
+	for (const [key, entry] of tenantCache) {
+		if (entry.expiresAt <= now) {
+			tenantCache.delete(key);
 		}
 	}
 }
@@ -175,8 +190,10 @@ export async function cippApiRequest(
 		const statusCode = err.statusCode || err.response?.status || err.response?.statusCode;
 
 		if (statusCode === 401) {
-			// Clear token cache on auth failure
-			tokenCache.delete(getCacheKey(credentials));
+			// Clear token + tenant cache on auth failure
+			const cacheKey = getCacheKey(credentials);
+			tokenCache.delete(cacheKey);
+			tenantCache.delete(cacheKey);
 			throw new NodeApiError(this.getNode(), errorResponse, {
 				message: 'Authentication failed',
 				description:
@@ -224,17 +241,43 @@ export async function cippApiRequest(
 export async function getTenantList(
 	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
 ): Promise<ITenant[]> {
+	const credentials = validateCredentials(await this.getCredentials('cippAdvancedApi'));
+	const cacheKey = getCacheKey(credentials);
+
+	// Check cache if enabled
+	if (credentials.enableTenantCache) {
+		const cached = tenantCache.get(cacheKey);
+		if (cached && cached.expiresAt > Date.now()) {
+			return cached.tenants;
+		}
+	}
+
+	// Fetch fresh from API
 	const response = await cippApiRequest.call(this, 'POST', '/api/ListTenants', {}, {});
 
+	let tenants: ITenant[];
 	if (Array.isArray(response)) {
-		return response as unknown as ITenant[];
+		tenants = response as unknown as ITenant[];
+	} else if (response.Results && Array.isArray(response.Results)) {
+		tenants = response.Results as ITenant[];
+	} else {
+		tenants = [];
 	}
 
-	if (response.Results && Array.isArray(response.Results)) {
-		return response.Results as ITenant[];
+	// Store in cache if enabled
+	if (credentials.enableTenantCache) {
+		const ttlMs = (credentials.tenantCacheTtl ?? 30) * 60000;
+		if (tenantCache.size >= MAX_TENANT_CACHE_SIZE) {
+			evictExpiredTenantEntries();
+			if (tenantCache.size >= MAX_TENANT_CACHE_SIZE) {
+				const firstKey = tenantCache.keys().next().value;
+				if (firstKey !== undefined) tenantCache.delete(firstKey);
+			}
+		}
+		tenantCache.set(cacheKey, { tenants, expiresAt: Date.now() + ttlMs });
 	}
 
-	return [];
+	return tenants;
 }
 
 /**
