@@ -3,6 +3,8 @@ export interface ICippCredentials {
 	tenantId: string;
 	clientId: string;
 	clientSecret: string;
+	enableTenantCache?: boolean;
+	tenantCacheTtl?: number;
 }
 
 export interface IAuthToken {
@@ -15,4 +17,9 @@ export interface ITenant {
 	defaultDomainName?: string;
 	displayName?: string;
 	domains?: string[];
+}
+
+export interface ITenantCacheEntry {
+	tenants: ITenant[];
+	expiresAt: number;
 }
