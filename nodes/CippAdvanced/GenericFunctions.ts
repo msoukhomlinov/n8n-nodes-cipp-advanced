@@ -248,7 +248,7 @@ export async function getTenantList(
 	if (credentials.enableTenantCache) {
 		const cached = tenantCache.get(cacheKey);
 		if (cached && cached.expiresAt > Date.now()) {
-			return cached.tenants;
+			return [...cached.tenants];
 		}
 	}
 
