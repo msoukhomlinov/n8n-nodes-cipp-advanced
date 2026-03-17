@@ -8,11 +8,11 @@ Advanced n8n community node for [CIPP.app](https://cipp.app) — comprehensive M
 ![CIPP Node](https://img.shields.io/badge/n8n-Community%20Node-ff6d5a)
 ![npm](https://img.shields.io/npm/v/n8n-nodes-cipp-advanced?label=latest&color=brightgreen)
 
-> **Acknowledgement:** This project builds on the foundation of [`@joshuanode/n8n-nodes-cipp`](https://github.com/ajoshuasmith/n8n-nodes-cipp) by [Joshua Smith](https://github.com/ajoshuasmith). The codebase was substantially rewritten with a modularised architecture, full API alignment audit against the CIPP OpenAPI spec, and expanded to **460 operations** across **28 resources** (~87% of the CIPP API surface).
+> **Acknowledgement:** This project builds on the foundation of [`@joshuanode/n8n-nodes-cipp`](https://github.com/ajoshuasmith/n8n-nodes-cipp) by [Joshua Smith](https://github.com/ajoshuasmith). The codebase was substantially rewritten with a modularised architecture, full API alignment audit against the CIPP OpenAPI spec, and expanded to **471 operations** across **28 resources** (~89% of the CIPP API surface).
 
 ## Features
 
-**460 operations** across 28 resources covering:
+**471 operations** across 28 resources covering:
 
 - **Identity Management** — Users (50 ops), Groups (11), Contacts (11), Identity (9)
 - **Email & Exchange** — Mailbox (46), Transport rules (20), Spam filters (18), Safe Links (12), Exchange Resources (9), Quarantine (4)
@@ -21,7 +21,7 @@ Advanced n8n community node for [CIPP.app](https://cipp.app) — comprehensive M
 - **Devices** — Devices (10), Autopilot (12)
 - **Apps** — Applications (24)
 - **Teams & SharePoint** — Teams (12), Teams Shifts (28), Voice (4)
-- **CIPP Platform** — Tools (11), CIPP Admin (19), CIPP Core (11), Scheduled Items (4), Backups (4), OneDrive (2)
+- **CIPP Platform** — Tools (11), CIPP Admin (24), CIPP Core (14), Scheduled Items (5), Backups (4), OneDrive (2)
 
 ### User-Friendly Design
 
@@ -62,13 +62,13 @@ For detailed authentication setup, see the [CIPP API Documentation](https://docs
 |----------|-----|----------------|
 | **User** | 50 | CRUD, edit (23 fields), guest/bulk add, BEC check, JIT admin, 9 detail lists, photo, licenses |
 | **Mailbox** | 46 | 9 list ops, permissions, settings, holds, archive, shared/mobile, message trace, EXO request, restore |
-| **Tenant** | 33 | Details, edit, add/onboard/offboard, domains, service health, secure score, tenant groups, license MSP summary |
+| **Tenant** | 35 | Details, edit, add/onboard/offboard, domains, service health, secure score, tenant groups, license MSP summary, admin portal licenses, service principals |
 | **Policy** | 32 | Assignment filters, Intune templates/scripts/settings, Defender deployment, compliance lists |
 | **Teams Shift** | 28 | Shifts, open shifts, scheduling groups, time-off, swap/offer requests (requires custom CIPP-API fork) |
 | **Application** | 24 | WinGet/Store/Choco/MSP/Office/Win32 apps, VPP sync, app approval, multi-tenant apps |
 | **Standard** | 23 | Standards, BPA, domain analyser, drift, run/convert, templates |
 | **Transport** | 20 | Transport rules/templates, Exchange connectors/templates, connection filters |
-| **CIPP Admin** | 19 | Settings, setup, extensions config/sync/test |
+| **CIPP Admin** | 24 | Settings, setup, extensions config/sync/test, CPV permissions/refresh, webhooks, ext alerts |
 | **Spamfilter** | 18 | Spam filters/templates, quarantine policies, allow/block lists |
 | **Conditional Access** | 14 | CA policies/templates, named locations, exclusions, policy check |
 | **Alert** | 14 | Security alerts/incidents, audit log, MDO alerts, webhooks |
@@ -77,14 +77,14 @@ For detailed authentication setup, see the [CIPP API Documentation](https://docs
 | **Safe Links** | 12 | Policies/templates, deployment |
 | **Team** | 12 | Teams, SharePoint sites/quota/settings/admin |
 | **Group** | 11 | CRUD, templates, Teams conversion, sender auth |
-| **CIPP Core** | 11 | Diagnostics, functions, GitHub actions, version |
+| **CIPP Core** | 14 | Diagnostics, functions, GitHub actions, version, alerts, logs, known IPs |
 | **Tools** | 11 | Breach search, Graph requests, GeoIP, universal search, compliance |
 | **Contact** | 11 | Contacts/templates, deploy, permissions |
 | **Device** | 10 | List, manage, actions, LAPS/recovery, detected apps |
 | **Exchange Resource** | 9 | Rooms, room lists, equipment |
 | **Identity** | 9 | Audit logs, deleted items, roles, Azure AD Connect, directory objects |
 | **Voice** | 4 | Phone numbers, locations, assign/unassign |
-| **Scheduled Item** | 4 | Add, list, remove, details |
+| **Scheduled Item** | 5 | Add, list, remove, details, trigger billing run |
 | **Backup** | 4 | List, run, restore, auto-backup |
 | **Quarantine** | 4 | List, release, deny, get many |
 | **OneDrive** | 2 | Provision, add shortcut |

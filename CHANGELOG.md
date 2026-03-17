@@ -2,6 +2,19 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.1.2] - 2026-03-17
+
+### Added
+
+- **CPV/Onboarding** — `refreshCpvPermissions`, `refreshCpvAll` → cippAdmin
+- **Webhooks** — `managePartnerWebhook`, `listPendingWebhooks` → cippAdmin
+- **Extension Alerts** — `listExtAlerts` → cippAdmin
+- **Monitoring/Logs** — `getCippAlerts`, `listLogs` (12 filters), `listKnownIpDb` → cippCore
+- **Reporting** — `listAdminPortalLicenses`, `listServicePrincipals` → tenant
+- **Billing** — `triggerBillingRun` → scheduledItem
+
+11 new endpoints across both standard node and AI Tools node. Coverage: ~87% → **~89%** (436/490 endpoints, 471 operations).
+
 ## [1.1.1] - 2026-03-17
 
 ### Changed
@@ -137,5 +150,5 @@ First public release of `n8n-nodes-cipp-advanced` — a comprehensive n8n commun
 ### Known Limitations
 
 - **Teams Shift** (28 ops) and **Exec Graph Request** tool require a custom CIPP-API fork exposing `/api/ExecGraphRequest` — not part of the standard CIPP API
-- ~65 CIPP API endpoints remain unimplemented (mostly admin/setup and testing endpoints)
+- ~54 CIPP API endpoints remain unimplemented (mostly admin/setup and testing endpoints)
 - No automated test suite
