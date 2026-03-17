@@ -605,6 +605,10 @@ export async function execute(
 			context, 'POST', '/api/RemoveUserDefaultTemplate', { ID: templateId }, {},
 		);
 
+	} else if (operation === 'listUsersAndGroups') {
+		responseData = await listWithSlice(context, i, 'GET', '/api/ListUsersAndGroups', {}, { tenantFilter },
+		);
+
 	} else if (operation === 'listNewUserDefaults') {
 		// POST method but tenantFilter as QS — cannot use postAction
 		const filters = context.getNodeParameter('listNewUserDefaultsFilters', i, {}) as IDataObject;

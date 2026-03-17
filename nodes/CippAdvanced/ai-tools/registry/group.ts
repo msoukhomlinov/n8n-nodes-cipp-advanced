@@ -12,7 +12,7 @@ export const resourceConfig: ResourceConfig = {
 			isList: true,
 			tenant: TENANT.qs,
 			params: {
-				groupId: P.qs('Filter by group ID'),
+				groupID: P.qs('Filter by group ID'),
 				members: P.qsBool('Include members'),
 				owners: P.qsBool('Include owners'),
 			},
@@ -52,7 +52,7 @@ export const resourceConfig: ResourceConfig = {
 			isList: false,
 			tenant: TENANT.body,
 			params: {
-				ID: P.body('Group ID', true),
+				id: P.body('Group ID', true),
 				GroupType: P.body('Group type', true),
 			},
 			description: 'Delete a group',

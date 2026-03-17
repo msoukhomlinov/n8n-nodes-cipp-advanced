@@ -191,8 +191,10 @@ export const resourceConfig: ResourceConfig = {
 			params: {
 				Domain: P.qs('Domain name', true),
 				Action: P.qs('Check action'),
+				ExpectedInclude: P.qs('Expected include value'),
 				Record: P.qs('DNS record type'),
 				Selector: P.qs('DKIM selector'),
+				Subdomains: P.qs('Subdomains to check'),
 			},
 			description: 'Get domain health',
 		},
@@ -245,6 +247,7 @@ export const resourceConfig: ResourceConfig = {
 			params: {
 				deviations: P.body('Deviations'),
 				reason: P.body('Reason'),
+				RemoveDriftCustomization: P.body('Remove drift customization ID'),
 			},
 			description: 'Update drift deviation',
 		},

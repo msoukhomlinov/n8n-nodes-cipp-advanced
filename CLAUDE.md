@@ -6,10 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 n8n community node package (`n8n-nodes-cipp-advanced`) for [CIPP.app](https://cipp.app) — a Microsoft 365 multi-tenant management platform used by MSPs. Two nodes in one package:
 
-1. **CIPP Advanced** (`cippAdvanced`) — Standard n8n node with UI-driven operations across 28 resources (~471 operations)
-2. **CIPP Advanced AI Tools** (`cippAdvancedAiTools`) — AI Tools node exposing the same operations to n8n AI Agent and MCP Trigger (one tool per resource, ~431 operations via data-driven registry)
+1. **CIPP Advanced** (`cippAdvanced`) — Standard n8n node with UI-driven operations across 28 resources (~473 operations)
+2. **CIPP Advanced AI Tools** (`cippAdvancedAiTools`) — AI Tools node exposing the same operations to n8n AI Agent and MCP Trigger (one tool per resource, ~433 operations via data-driven registry)
 
-Coverage: ~436 of ~490 API endpoints (~89%).
+Coverage: ~438 of ~490 API endpoints (~89%).
 
 **Origin:** Forked from [`@joshuanode/n8n-nodes-cipp`](https://github.com/ajoshuasmith/n8n-nodes-cipp), then substantially rewritten. Rebranded as `n8n-nodes-cipp-advanced` with node identity `cippAdvanced`.
 
@@ -133,13 +133,13 @@ Uses Azure AD OAuth2 client credentials flow (not n8n's built-in OAuth). Token i
 
 ---
 
-## TODO-18 (Future): Remaining Unimplemented Endpoints (54 of ~490)
+## TODO-18 (Future): Remaining Unimplemented Endpoints (52 of ~490)
 
-All endpoints below exist in `docs/openapi.json` but have no handler in any action file. Current coverage: **471 operations covering ~436/490 unique API endpoints (~89%)**.
+All endpoints below exist in `docs/openapi.json` but have no handler in any action file. Current coverage: **473 operations covering ~438/490 unique API endpoints (~89%)**.
 
 > **Verified 2026-03-17:** All endpoints reviewed against OpenAPI spec for correct classification. Categories reflect actual MSP/IT integrator workflow automation usefulness, not just surface-level naming.
 
-### Category A — MSP-Useful (9 endpoints — valuable for day-to-day MSP workflow automation)
+### Category A — MSP-Useful (8 endpoints — valuable for day-to-day MSP workflow automation)
 
 | Method | Endpoint | Notes |
 |--------|----------|-------|
@@ -148,14 +148,12 @@ All endpoints below exist in `docs/openapi.json` but have no handler in any acti
 | POST | `/api/ExecEditTemplate` | Edit a template (template lifecycle automation) |
 | POST | `/api/ListGraphBulkRequest` | Bulk Graph queries per tenant (powerful bulk data retrieval) |
 | GET | `/api/ListHaloClients` | Halo PSA client listing (PSA integration/sync) |
-| GET | `/api/ListUsersAndGroups` | Combined tenant directory snapshot (users + groups in one call) |
 | POST | `/api/RemoveDeletedObject` | Permanently purge soft-deleted directory objects |
 
-### Category B — Admin/Setup (33 endpoints — CIPP instance config, rarely automated)
+### Category B — Admin/Setup (32 endpoints — CIPP instance config, rarely automated)
 
 | Method | Endpoint | Notes |
 |--------|----------|-------|
-| POST | `/api/ExecAccessChecks` | Run CIPP access checks (per-tenant validation) |
 | POST | `/api/ExecAddTrustedIP` | CIPP IP whitelist config |
 | GET | `/api/ExecAPIPermissionList` | SuperAdmin SAM permission check |
 | DELETE | `/api/ExecApiClient` | Delete an API client |

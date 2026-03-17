@@ -81,6 +81,7 @@ export const TENANT = {
 	bodySelected: { location: 'body' as const, field: 'selectedTenants' },
 	bodyTenant: { location: 'body' as const, field: 'tenant' },
 	bodyTenantId: { location: 'body' as const, field: 'tenantId' },
+	bodyTenantIdPascal: { location: 'body' as const, field: 'TenantId' },
 	none: { location: 'none' as const, field: '' },
 } as const;
 

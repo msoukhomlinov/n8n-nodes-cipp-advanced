@@ -8,16 +8,16 @@ Advanced n8n community node for [CIPP.app](https://cipp.app) — comprehensive M
 ![CIPP Node](https://img.shields.io/badge/n8n-Community%20Node-ff6d5a)
 ![npm](https://img.shields.io/npm/v/n8n-nodes-cipp-advanced?label=latest&color=brightgreen)
 
-> **Acknowledgement:** This project builds on the foundation of [`@joshuanode/n8n-nodes-cipp`](https://github.com/ajoshuasmith/n8n-nodes-cipp) by [Joshua Smith](https://github.com/ajoshuasmith). The codebase was substantially rewritten with a modularised architecture, full API alignment audit against the CIPP OpenAPI spec, and expanded to **471 operations** across **28 resources** (~89% of the CIPP API surface).
+> **Acknowledgement:** This project builds on the foundation of [`@joshuanode/n8n-nodes-cipp`](https://github.com/ajoshuasmith/n8n-nodes-cipp) by [Joshua Smith](https://github.com/ajoshuasmith). The codebase was substantially rewritten with a modularised architecture, full API alignment audit against the CIPP OpenAPI spec, and expanded to **473 operations** across **28 resources** (~89% of the CIPP API surface).
 
 ## Features
 
-**471 operations** across 28 resources covering:
+**473 operations** across 28 resources covering:
 
-- **Identity Management** — Users (50 ops), Groups (11), Contacts (11), Identity (9)
+- **Identity Management** — Users (51 ops), Groups (11), Contacts (11), Identity (9)
 - **Email & Exchange** — Mailbox (46), Transport rules (20), Spam filters (18), Safe Links (12), Exchange Resources (9), Quarantine (4)
 - **Security & Compliance** — Policies/Intune (32), Conditional Access (14), Alerts (14), GDAP (13)
-- **Tenant Administration** — Tenants (33), Standards/BPA/Drift (23)
+- **Tenant Administration** — Tenants (34), Standards/BPA/Drift (23)
 - **Devices** — Devices (10), Autopilot (12)
 - **Apps** — Applications (24)
 - **Teams & SharePoint** — Teams (12), Teams Shifts (28), Voice (4)
@@ -60,9 +60,9 @@ For detailed authentication setup, see the [CIPP API Documentation](https://docs
 
 | Resource | Ops | Key Operations |
 |----------|-----|----------------|
-| **User** | 50 | CRUD, edit (23 fields), guest/bulk add, BEC check, JIT admin, 9 detail lists, photo, licenses |
+| **User** | 51 | CRUD, edit (23 fields), guest/bulk add, BEC check, JIT admin, 9 detail lists, photo, licenses, users & groups snapshot |
 | **Mailbox** | 46 | 9 list ops, permissions, settings, holds, archive, shared/mobile, message trace, EXO request, restore |
-| **Tenant** | 35 | Details, edit, add/onboard/offboard, domains, service health, secure score, tenant groups, license MSP summary, admin portal licenses, service principals |
+| **Tenant** | 36 | Details, edit, add/onboard/offboard, domains, service health, secure score, tenant groups, license MSP summary, admin portal licenses, service principals, access checks |
 | **Policy** | 32 | Assignment filters, Intune templates/scripts/settings, Defender deployment, compliance lists |
 | **Teams Shift** | 28 | Shifts, open shifts, scheduling groups, time-off, swap/offer requests (requires custom CIPP-API fork) |
 | **Application** | 24 | WinGet/Store/Choco/MSP/Office/Win32 apps, VPP sync, app approval, multi-tenant apps |

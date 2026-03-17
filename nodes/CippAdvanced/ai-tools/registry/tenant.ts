@@ -377,6 +377,18 @@ export const resourceConfig: ResourceConfig = {
 			params: {},
 			description: 'List admin portal license information for a tenant',
 		},
+		runAccessChecks: {
+			method: 'POST',
+			endpoint: '/api/ExecAccessChecks',
+			isWrite: false,
+			isList: false,
+			tenant: TENANT.bodyTenantIdPascal,
+			params: {
+				SkipCache: P.qs('Skip cached results (set to "true" for fresh checks)'),
+				Type: P.qs('Type of access check to run'),
+			},
+			description: 'Run CIPP access checks for a tenant to validate permissions and connectivity',
+		},
 		listServicePrincipals: {
 			method: 'GET',
 			endpoint: '/api/ExecServicePrincipals',

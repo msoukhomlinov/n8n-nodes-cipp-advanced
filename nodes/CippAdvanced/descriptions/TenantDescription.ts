@@ -206,6 +206,12 @@ export const tenantOperations: INodeProperties[] = [
 				action: 'Remove tenant',
 			},
 			{
+				name: 'Run Access Checks',
+				value: 'runAccessChecks',
+				description: 'Run CIPP access checks for a tenant to validate permissions and connectivity',
+				action: 'Run access checks',
+			},
+			{
 				name: 'Run Tenant Group Rule',
 				value: 'runTenantGroupRule',
 				description: 'Execute tenant group dynamic rules immediately',
@@ -236,7 +242,7 @@ export const tenantFields: INodeProperties[] = [
 		'listOAuthApps', 'listServiceHealth',
 		'listDomains', 'addDomain', 'removeDomain',
 		'excludeTenant', 'listTenantAllowBlockList', 'removeTenantAllowBlockList',
-		'listAdminPortalLicenses',
+		'listAdminPortalLicenses', 'runAccessChecks',
 	]),
 
 	// ── Return All / Limit for list operations ──
@@ -1155,6 +1161,37 @@ export const tenantFields: INodeProperties[] = [
 		],
 		default: 'delete',
 		description: 'The domain action to execute',
+	},
+
+	// ── Run Access Checks ─────────────────────────────────────────
+	{
+		displayName: 'Options',
+		name: 'accessCheckOptions',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['tenant'],
+				operation: ['runAccessChecks'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Skip Cache',
+				name: 'SkipCache',
+				type: 'string',
+				default: '',
+				description: 'Set to "true" to skip cached results and run fresh checks',
+			},
+			{
+				displayName: 'Type',
+				name: 'Type',
+				type: 'string',
+				default: '',
+				description: 'Type of access check to run',
+			},
+		],
 	},
 
 	// ── listServicePrincipals ─────────────────────────────────────

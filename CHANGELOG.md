@@ -12,8 +12,10 @@ All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file
 - **Monitoring/Logs** — `getCippAlerts`, `listLogs` (12 filters), `listKnownIpDb` → cippCore
 - **Reporting** — `listAdminPortalLicenses`, `listServicePrincipals` → tenant
 - **Billing** — `triggerBillingRun` → scheduledItem
+- **Directory** — `listUsersAndGroups` → user (combined users + groups snapshot per tenant)
+- **Tenant Admin** — `runAccessChecks` → tenant (per-tenant CIPP access validation)
 
-11 new endpoints across both standard node and AI Tools node. Coverage: ~87% → **~89%** (436/490 endpoints, 471 operations).
+13 new endpoints across both standard node and AI Tools node. Coverage: ~87% → **~89%** (438/490 endpoints, 473 operations).
 
 ## [1.1.1] - 2026-03-17
 

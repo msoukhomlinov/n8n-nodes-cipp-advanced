@@ -25,16 +25,18 @@ export async function execute(
 		const owner = context.getNodeParameter('owner', i) as string;
 		const visibility = context.getNodeParameter('visibility', i) as string;
 
-		responseData = await postAction(
+		responseData = await cippApiRequest.call(
 			context,
-			i,
+			'POST',
 			'/api/AddTeam',
 			{
+				tenantid: tenantFilter,
 				displayName,
 				description: teamDescription,
 				owner,
 				visibility,
 			},
+			{},
 		);
 	} else if (operation === 'getSites') {
 		const siteType = context.getNodeParameter('siteType', i) as string;
@@ -45,7 +47,7 @@ export async function execute(
 			'GET',
 			'/api/ListSites',
 			{},
-			{ tenantFilter, type: siteType },
+			{ tenantFilter, Type: siteType },
 		);
 	} else if (operation === 'addSite') {
 		const siteName = context.getNodeParameter('siteName', i) as string;
@@ -78,7 +80,7 @@ export async function execute(
 			'GET',
 			'/api/ListTeamsActivity',
 			{},
-			{ tenantFilter, type: 'TeamsUserActivityUser' },
+			{ tenantFilter, Type: 'TeamsUserActivityUser' },
 		);
 	} else if (operation === 'manageSiteMember') {
 		const siteUrl = context.getNodeParameter('siteUrl', i) as string;

@@ -22,6 +22,7 @@ const listOps = [
 	'listUserSettings',
 	'listUserSigninLogs',
 	'listUsers',
+	'listUsersAndGroups',
 ];
 
 const tenantOps = [
@@ -60,6 +61,7 @@ const tenantOps = [
 	'listUserSettings',
 	'listUserSigninLogs',
 	'listUsers',
+	'listUsersAndGroups',
 	'offboard',
 	'patchUser',
 	'remove',
@@ -295,6 +297,12 @@ export const userOperations: INodeProperties[] = [
 				value: 'listUsers',
 				description: 'List users via the CIPP ListUsers endpoint',
 				action: 'List users',
+			},
+			{
+				name: 'List Users and Groups',
+				value: 'listUsersAndGroups',
+				description: 'Get a combined directory snapshot of users and groups for a tenant',
+				action: 'List users and groups',
 			},
 			{
 				name: 'Offboard',

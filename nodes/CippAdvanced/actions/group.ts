@@ -14,7 +14,7 @@ export async function execute(
 		const options = context.getNodeParameter('options', i, {}) as IDataObject;
 
 		const qs: IDataObject = { tenantFilter };
-		if (options.groupId) qs.groupId = options.groupId;
+		if (options.groupId) qs.groupID = options.groupId;
 		if (options.members) qs.members = true;
 		if (options.owners) qs.owners = true;
 
@@ -59,7 +59,7 @@ export async function execute(
 		const groupType = context.getNodeParameter('groupTypeForDelete', i) as string;
 
 		responseData = await postAction(context, i, '/api/ExecGroupsDelete', {
-			ID: groupId,
+			id: groupId,
 			GroupType: groupType,
 		});
 	} else if (operation === 'hideFromGal') {

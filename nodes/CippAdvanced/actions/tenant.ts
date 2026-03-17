@@ -436,6 +436,17 @@ export async function execute(
 		if (fields.Select) qs.Select = fields.Select;
 		responseData = await listWithSlice(context, i, 'GET', '/api/ExecServicePrincipals', {}, qs);
 
+	} else if (operation === 'runAccessChecks') {
+		// POST /api/ExecAccessChecks — TenantId in body, optional SkipCache + Type QS
+		const body: IDataObject = {
+			TenantId: getTenantFilter(context, i),
+		};
+		const qs: IDataObject = {};
+		const options = context.getNodeParameter('accessCheckOptions', i, {}) as IDataObject;
+		if (options.SkipCache) qs.SkipCache = options.SkipCache as string;
+		if (options.Type) qs.Type = options.Type as string;
+		responseData = await cippApiRequest.call(context, 'POST', '/api/ExecAccessChecks', body, qs);
+
 	} else {
 		throw new NodeOperationError(context.getNode(), `Unknown operation: ${operation}`, { itemIndex: i });
 	}

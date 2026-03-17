@@ -567,5 +567,14 @@ export const resourceConfig: ResourceConfig = {
 			},
 			description: 'List new user default templates',
 		},
+		listUsersAndGroups: {
+			method: 'GET',
+			endpoint: '/api/ListUsersAndGroups',
+			isWrite: false,
+			isList: true,
+			tenant: TENANT.qs,
+			params: {},
+			description: 'Get a combined directory snapshot of all users and groups for a tenant',
+		},
 	},
 };

@@ -20,7 +20,7 @@ export const resourceConfig: ResourceConfig = {
 			endpoint: '/api/AddTeam',
 			isWrite: true,
 			isList: false,
-			tenant: TENANT.body,
+			tenant: TENANT.bodyLower,
 			params: {
 				displayName: P.body('Team name', true),
 				description: P.body('Description', true),
@@ -36,7 +36,7 @@ export const resourceConfig: ResourceConfig = {
 			isList: true,
 			tenant: TENANT.qs,
 			params: {
-				type: P.qs('Site type', true),
+				Type: P.qs('Site type', true),
 			},
 			description: 'List SharePoint sites',
 		},
@@ -62,6 +62,7 @@ export const resourceConfig: ResourceConfig = {
 			isList: true,
 			tenant: TENANT.qs,
 			params: {},
+			defaults: { qs: { Type: 'TeamsUserActivityUser' } },
 			description: 'List Teams activity',
 		},
 		manageSiteMember: {
