@@ -58,13 +58,32 @@ export async function execute(
 
 				const termInfo = Array.isArray(license.TermInfo) ? license.TermInfo[0] as IDataObject | undefined : undefined;
 				const term = termInfo?.Term as string | undefined;
-				const daysUntilRenew = termInfo?.DaysUntilRenew != null ? Number(termInfo.DaysUntilRenew) : undefined;
-				const renewalDate = termInfo?.NextLifecycle as string | undefined;
+				const rawRenewalDate = termInfo?.NextLifecycle as string | null | undefined;
 				const isTrial = termInfo?.IsTrial as boolean | undefined;
+
+				// Renewal date is the source of truth — if absent/empty, DaysUntilRenew
+				// from the API is garbage (e.g. -739690 computed from epoch) and must be
+				// discarded. We also guard against absurdly negative values (< -365) even
+				// when a date string is present, as a safety net for malformed data.
+				const hasValidRenewalDate = typeof rawRenewalDate === 'string' && rawRenewalDate.trim() !== '';
+				const renewalDate: string | null = hasValidRenewalDate ? rawRenewalDate!.trim() : null;
+
+				let daysUntilRenew: number | null;
+				if (!hasValidRenewalDate) {
+					daysUntilRenew = null;
+				} else if (termInfo?.DaysUntilRenew != null) {
+					const raw = Number(termInfo.DaysUntilRenew);
+					// Values beyond -365 with a "valid" date likely indicate a stale/corrupt date
+					daysUntilRenew = (!isNaN(raw) && raw > -365) ? raw : null;
+				} else {
+					daysUntilRenew = null;
+				}
 
 				let renewalUrgency: string;
 				if (daysUntilRenew == null) {
-					renewalUrgency = 'Unknown';
+					renewalUrgency = 'N/A';
+				} else if (daysUntilRenew <= 0) {
+					renewalUrgency = 'Expired';
 				} else if (daysUntilRenew <= 7) {
 					renewalUrgency = 'Critical';
 				} else if (daysUntilRenew <= 30) {
