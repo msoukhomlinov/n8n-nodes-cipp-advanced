@@ -4,9 +4,13 @@ All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file
 
 ## [1.1.1] - 2026-03-17
 
+### Changed
+
+- Renamed "MSP Summary" output mode to "Summary" in Get Licenses
+
 ### Fixed
 
-- **Get Licenses (MSP Summary):** Licenses with missing/null renewal dates (e.g., non-NCE, developer) no longer show garbage `DaysUntilRenew` values or false "Critical" urgency — `RenewalDate` source-of-truth validation now nullifies derived fields when date is absent
+- **Get Licenses (Summary):** Licenses with missing/null renewal dates (e.g., non-NCE, developer) no longer show garbage `DaysUntilRenew` values or false "Critical" urgency — `RenewalDate` source-of-truth validation now nullifies derived fields when date is absent
 - Added `N/A` renewal urgency for licenses without a renewal date and `Expired` for licenses past renewal
 
 ## [1.1.0] - 2026-03-17

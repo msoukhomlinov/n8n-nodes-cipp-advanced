@@ -269,7 +269,7 @@ export const tenantFields: INodeProperties[] = [
 		type: 'options',
 		options: [
 			{ name: 'Full', value: 'full', description: 'Raw API response with all nested arrays' },
-			{ name: 'MSP Summary', value: 'mspSummary', description: 'Flattened output with computed MSP metrics (no nested arrays)' },
+			{ name: 'Summary', value: 'mspSummary', description: 'Flattened output with computed metrics (no nested arrays)' },
 		],
 		default: 'full',
 		displayOptions: {
@@ -278,7 +278,7 @@ export const tenantFields: INodeProperties[] = [
 				operation: ['getLicenses'],
 			},
 		},
-		description: 'Full returns the raw API response. MSP Summary flattens the data and adds computed columns like UtilizationPct, RenewalUrgency, and AssignmentMethod.',
+		description: 'Full returns the raw API response. Summary flattens the data and adds computed columns like UtilizationPct, RenewalUrgency, and AssignmentMethod.',
 	},
 
 	// ── Clear Cache ──
