@@ -2,6 +2,16 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.1.3] - 2026-03-17
+
+### Added
+
+- **Tenant List Caching** — in-memory cache for the tenant dropdown (resourceLocator) to eliminate repeated `POST /api/ListTenants` calls on every interaction
+  - Configurable via two new credential fields: `enableTenantCache` (boolean, default on) and `tenantCacheTtl` (minutes, default 30)
+  - Mirrors the existing OAuth token cache pattern (module-level Map, TTL expiry, eviction, 401 invalidation)
+  - Returns shallow copies to prevent cache mutation bugs
+  - TTL field only shown when cache is enabled; range 1–1440 minutes
+
 ## [1.1.2] - 2026-03-17
 
 ### Added

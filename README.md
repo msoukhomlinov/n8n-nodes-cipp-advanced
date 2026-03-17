@@ -26,6 +26,7 @@ Advanced n8n community node for [CIPP.app](https://cipp.app) — comprehensive M
 ### User-Friendly Design
 
 - **Tenant Selector** — Searchable dropdown to select tenants by name
+- **Tenant List Caching** — In-memory cache (default 30 min TTL) speeds up the tenant dropdown; configurable on/off and TTL in credential settings
 - **Field Picker** — Multi-select for user properties (no need to memorise Graph API field names)
 - **Smart Defaults** — Sensible default selections to keep responses fast and small
 - **AI Agent Compatible** — Works as a tool in n8n AI agent workflows (`usableAsTool`)
@@ -53,6 +54,8 @@ RUN npm install -g n8n-nodes-cipp-advanced
    - **Azure AD Tenant ID**: The tenant where your CIPP app registration lives
    - **Application (Client) ID**: From your Azure AD app registration
    - **Client Secret**: Generated from your app registration
+   - **Enable Tenant List Cache** (optional, default: on): Caches tenant list to speed up the dropdown
+   - **Tenant Cache TTL** (optional, default: 30 min): How long to cache the tenant list (1–1440 minutes)
 
 For detailed authentication setup, see the [CIPP API Documentation](https://docs.cipp.app/api-documentation/setup-and-authentication).
 
