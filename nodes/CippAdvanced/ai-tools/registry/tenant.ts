@@ -368,5 +368,28 @@ export const resourceConfig: ResourceConfig = {
 			},
 			description: 'Remove or act on a domain',
 		},
+		listAdminPortalLicenses: {
+			method: 'GET',
+			endpoint: '/api/ListAdminPortalLicenses',
+			isWrite: false,
+			isList: true,
+			tenant: TENANT.qs,
+			params: {},
+			description: 'List admin portal license information for a tenant',
+		},
+		listServicePrincipals: {
+			method: 'GET',
+			endpoint: '/api/ExecServicePrincipals',
+			isWrite: false,
+			isList: true,
+			tenant: TENANT.none,
+			params: {
+				Action: P.qs('Service principal action'),
+				AppId: P.qs('Application ID'),
+				Id: P.qs('Service principal ID'),
+				Select: P.qs('Graph $select projection'),
+			},
+			description: 'List and manage tenant service principals',
+		},
 	},
 };

@@ -420,6 +420,22 @@ export async function execute(
 			{},
 		);
 
+	} else if (operation === 'listAdminPortalLicenses') {
+		// GET /api/ListAdminPortalLicenses — standard tenantFilter QS
+		responseData = await listWithSlice(
+			context, i, 'GET', '/api/ListAdminPortalLicenses', {}, { tenantFilter: getTenantFilter(context, i) },
+		);
+
+	} else if (operation === 'listServicePrincipals') {
+		// GET /api/ExecServicePrincipals — optional QS params, no tenantFilter
+		const fields = context.getNodeParameter('servicePrincipalFields', i, {}) as IDataObject;
+		const qs: IDataObject = {};
+		if (fields.Action) qs.Action = fields.Action;
+		if (fields.AppId) qs.AppId = fields.AppId;
+		if (fields.Id) qs.Id = fields.Id;
+		if (fields.Select) qs.Select = fields.Select;
+		responseData = await listWithSlice(context, i, 'GET', '/api/ExecServicePrincipals', {}, qs);
+
 	} else {
 		throw new NodeOperationError(context.getNode(), `Unknown operation: ${operation}`, { itemIndex: i });
 	}

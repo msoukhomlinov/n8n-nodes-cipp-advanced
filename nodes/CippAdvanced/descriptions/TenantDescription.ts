@@ -104,6 +104,12 @@ export const tenantOperations: INodeProperties[] = [
 				action: 'Get offboarding job',
 			},
 			{
+				name: 'List Admin Portal Licenses',
+				value: 'listAdminPortalLicenses',
+				description: 'List admin portal license information for a tenant',
+				action: 'List admin portal licenses',
+			},
+			{
 				name: 'List App Consent Requests',
 				value: 'listAppConsentRequests',
 				description: 'List app consent requests for a tenant',
@@ -138,6 +144,12 @@ export const tenantOperations: INodeProperties[] = [
 				value: 'listServiceHealth',
 				description: 'List service health status for a tenant',
 				action: 'List service health',
+			},
+			{
+				name: 'List Service Principals',
+				value: 'listServicePrincipals',
+				description: 'List and manage tenant service principals',
+				action: 'List service principals',
 			},
 			{
 				name: 'List Tenant Allow/Block List',
@@ -224,6 +236,7 @@ export const tenantFields: INodeProperties[] = [
 		'listOAuthApps', 'listServiceHealth',
 		'listDomains', 'addDomain', 'removeDomain',
 		'excludeTenant', 'listTenantAllowBlockList', 'removeTenantAllowBlockList',
+		'listAdminPortalLicenses',
 	]),
 
 	// ── Return All / Limit for list operations ──
@@ -232,12 +245,14 @@ export const tenantFields: INodeProperties[] = [
 		'listAppConsentRequests', 'listOAuthApps', 'listServiceHealth',
 		'listDomains',
 		'listTenantAllowBlockList', 'listTenantGroups', 'listTenantOnboarding',
+		'listAdminPortalLicenses', 'listServicePrincipals',
 	]),
 	limitField('tenant', [
 		'getAll', 'getLicenses', 'getCspLicenses', 'listDefenderState', 'listCspSkus',
 		'listAppConsentRequests', 'listOAuthApps', 'listServiceHealth',
 		'listDomains',
 		'listTenantAllowBlockList', 'listTenantGroups', 'listTenantOnboarding',
+		'listAdminPortalLicenses', 'listServicePrincipals',
 	]),
 
 	// ── Get Many options ──
@@ -1140,5 +1155,50 @@ export const tenantFields: INodeProperties[] = [
 		],
 		default: 'delete',
 		description: 'The domain action to execute',
+	},
+
+	// ── listServicePrincipals ─────────────────────────────────────
+	{
+		displayName: 'Additional Fields',
+		name: 'servicePrincipalFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['tenant'],
+				operation: ['listServicePrincipals'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Action',
+				name: 'Action',
+				type: 'string',
+				default: '',
+				description: 'Service principal action (e.g. list, create, delete)',
+			},
+			{
+				displayName: 'App ID',
+				name: 'AppId',
+				type: 'string',
+				default: '',
+				description: 'Filter by application ID',
+			},
+			{
+				displayName: 'ID',
+				name: 'Id',
+				type: 'string',
+				default: '',
+				description: 'Filter by service principal ID',
+			},
+			{
+				displayName: 'Select',
+				name: 'Select',
+				type: 'string',
+				default: '',
+				description: 'Graph $select projection (comma-separated properties)',
+			},
+		],
 	},
 ];
