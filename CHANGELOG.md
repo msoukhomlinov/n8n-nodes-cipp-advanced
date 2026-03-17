@@ -2,6 +2,32 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.1.0] - 2026-03-17
+
+### Added
+
+- **CIPP Advanced AI Tools node** (`cippAdvancedAiTools`) — new companion node exposing all CIPP operations to n8n AI Agent and MCP Trigger
+  - One unified tool per resource (28 tools) with `operation` enum field
+  - Compatible with AI Agent (direct), MCP Trigger (direct), and MCP Trigger (queue mode)
+  - 460 operations across 28 resources — 100% parity with the standard node
+  - Data-driven operation registry (`ai-tools/registry/`) with one file per resource
+  - Generic executor with per-operation parameter mapping, tenant field casing, and response unwrapping
+  - `customExecutor` extension point for resources with non-standard API patterns (teamsShift Graph routing)
+  - 3-layer write safety: `allowWriteOperations` toggle enforced in supplyData, func(), and execute()
+  - Structured result envelopes (`wrapSuccess`/`wrapError`) with `nextAction` LLM self-correction guidance
+  - Runtime class resolution via `createRequire()` — fixes `instanceof` across bundled module copies
+  - Per-operation `defaults` for hardcoded API values (ClearCache, Enable, Type, AddExclusion, etc.)
+  - Per-operation `responseUnwrap` for custom response wrapper paths
+  - Per-operation safety text in descriptions (delete confirmation, create/update value confirmation)
+  - Token-budgeted tool descriptions with automatic truncation for large resources
+  - Shared constants (`N8N_METADATA_FIELDS`, `isWriteOperation`) — single source of truth across node + executor
+
+### Changed
+
+- `package.json`: version 1.0.4 → 1.1.0, added `zod` devDependency, registered AI Tools node in `n8n.nodes`
+- `index.ts`: re-exports `CippAdvancedAiTools` class
+- `CLAUDE.md`: updated architecture to two-node package, added AI Tools architecture docs and key gotchas
+
 ## [1.0.4] - 2026-03-16
 
 ### Added

@@ -1,0 +1,101 @@
+// ai-tools/registry/types.ts
+// Shared interfaces for the operation registry.
+
+import type { ISupplyDataFunctions } from 'n8n-workflow';
+
+export interface ParamDef {
+	/** API field name if different from tool param name */
+	apiName?: string;
+	location: 'body' | 'qs';
+	type: 'string' | 'number' | 'boolean' | 'json';
+	required: boolean;
+	description: string;
+	enumValues?: string[];
+}
+
+export interface OperationDef {
+	method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+	endpoint: string;
+	isWrite: boolean;
+	isList: boolean;
+	/** How the tenant identifier is sent. field = exact API field name. */
+	tenant: { location: 'qs' | 'body' | 'none'; field: string };
+	params: Record<string, ParamDef>;
+	description: string;
+	/** Hardcoded values injected into body/qs regardless of LLM input */
+	defaults?: { body?: Record<string, unknown>; qs?: Record<string, unknown> };
+	/** Response unwrap path — the key containing the result array (e.g., 'Results', 'value') */
+	responseUnwrap?: string;
+	/** Custom label for this operation in descriptions (overrides auto-generated) */
+	operationLabel?: string;
+}
+
+export interface ResourceConfig {
+	label: string;
+	description: string;
+	operations: Record<string, OperationDef>;
+	/**
+	 * Custom executor — overrides the generic executor for this entire resource.
+	 * Use for resources with non-standard API call patterns (e.g., Graph-routed requests).
+	 * Receives stripped params (no n8n metadata), tenant filter, and the operation definition.
+	 */
+	customExecutor?: (
+		context: ISupplyDataFunctions,
+		operation: string,
+		tenantFilter: string,
+		params: Record<string, unknown>,
+		opDef: OperationDef,
+	) => Promise<string>;
+}
+
+/** Shorthand helpers for compact param definitions */
+export const P = {
+	qs: (desc: string, required = false): ParamDef =>
+		({ location: 'qs', type: 'string', required, description: desc }),
+	qsNum: (desc: string, required = false): ParamDef =>
+		({ location: 'qs', type: 'number', required, description: desc }),
+	qsBool: (desc: string, required = false): ParamDef =>
+		({ location: 'qs', type: 'boolean', required, description: desc }),
+	body: (desc: string, required = false): ParamDef =>
+		({ location: 'body', type: 'string', required, description: desc }),
+	bodyNum: (desc: string, required = false): ParamDef =>
+		({ location: 'body', type: 'number', required, description: desc }),
+	bodyBool: (desc: string, required = false): ParamDef =>
+		({ location: 'body', type: 'boolean', required, description: desc }),
+	bodyJson: (desc: string, required = false): ParamDef =>
+		({ location: 'body', type: 'json', required, description: desc }),
+	bodyEnum: (desc: string, values: string[], required = false): ParamDef =>
+		({ location: 'body', type: 'string', required, description: desc, enumValues: values }),
+	qsEnum: (desc: string, values: string[], required = false): ParamDef =>
+		({ location: 'qs', type: 'string', required, description: desc, enumValues: values }),
+} as const;
+
+/** Standard tenant patterns */
+export const TENANT = {
+	qs: { location: 'qs' as const, field: 'tenantFilter' },
+	body: { location: 'body' as const, field: 'tenantFilter' },
+	bodyPascal: { location: 'body' as const, field: 'TenantFilter' },
+	bodyLower: { location: 'body' as const, field: 'tenantid' },
+	bodyLowerAll: { location: 'body' as const, field: 'tenantfilter' },
+	bodyTenantID: { location: 'body' as const, field: 'tenantID' },
+	bodySelected: { location: 'body' as const, field: 'selectedTenants' },
+	bodyTenant: { location: 'body' as const, field: 'tenant' },
+	bodyTenantId: { location: 'body' as const, field: 'tenantId' },
+	none: { location: 'none' as const, field: '' },
+} as const;
+
+// ── Shared constants ────────────────────────────────────────────────
+
+/** n8n framework metadata fields to strip from all tool invocations */
+export const N8N_METADATA_FIELDS = new Set([
+	'sessionId', 'action', 'chatInput',
+	'root',  // canvas UUID
+	'tool', 'toolName', 'toolCallId',
+	'operation',  // stripped by func(), but defense-in-depth for execute() path
+	'resource',   // only in execute() path
+]);
+
+/** Operation names that are considered write/mutating */
+export function isWriteOperation(opName: string, resourceConfig: ResourceConfig): boolean {
+	return resourceConfig.operations[opName]?.isWrite ?? false;
+}
