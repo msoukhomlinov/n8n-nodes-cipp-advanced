@@ -246,7 +246,11 @@ export async function execute(
 		if (fields.CorrelationId) qs.CorrelationId = fields.CorrelationId;
 		const body: IDataObject = {};
 		if (fields.enabled !== undefined) body.enabled = fields.enabled;
-		if (fields.EventType) body.EventType = fields.EventType;
+		if (fields.EventType) {
+			body.EventType = parseJsonObjectPayload(
+				context.getNode(), fields.EventType, 'Event Type', i,
+			);
+		}
 		if (fields.standardsExcludeAllTenants !== undefined) body.standardsExcludeAllTenants = fields.standardsExcludeAllTenants;
 		return cippApiRequest.call(context, 'POST', '/api/ExecPartnerWebhook', body, qs);
 	}

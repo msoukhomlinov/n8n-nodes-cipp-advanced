@@ -944,7 +944,7 @@ export const cippAdminFields: INodeProperties[] = [
 				name: 'Action',
 				type: 'string',
 				default: '',
-				description: 'The webhook action to perform',
+
 			},
 			{
 				displayName: 'Correlation ID',
@@ -961,14 +961,14 @@ export const cippAdminFields: INodeProperties[] = [
 				description: 'Whether the webhook is enabled',
 			},
 			{
-				displayName: 'Event Type',
+				displayName: 'Event Type (JSON)',
 				name: 'EventType',
 				type: 'string',
 				default: '',
-				description: 'The event type to subscribe to',
+				description: 'LabelValue JSON object for the event type to subscribe to',
 			},
 			{
-				displayName: 'Exclude All Tenants from Standards',
+				displayName: 'Exclude All Tenants From Standards',
 				name: 'standardsExcludeAllTenants',
 				type: 'boolean',
 				default: false,

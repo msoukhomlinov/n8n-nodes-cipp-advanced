@@ -163,6 +163,7 @@ export const resourceConfig: ResourceConfig = {
 				logentryid: P.qs('Log entry ID'),
 				ScheduledTaskId: P.qs('Scheduled task ID'),
 				StandardTemplateId: P.qs('Standard template ID'),
+				ListLogs: P.qs('List logs flag'),
 			},
 			description: 'List CIPP audit and monitoring logs',
 		},

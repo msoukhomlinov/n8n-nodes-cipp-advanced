@@ -153,6 +153,7 @@ export async function execute(
 		if (filters.logentryid) qs.logentryid = filters.logentryid;
 		if (filters.ScheduledTaskId) qs.ScheduledTaskId = filters.ScheduledTaskId;
 		if (filters.StandardTemplateId) qs.StandardTemplateId = filters.StandardTemplateId;
+		if (filters.ListLogs) qs.ListLogs = filters.ListLogs;
 		return listWithSlice(context, i, 'GET', '/api/ListLogs', {}, qs);
 	}
 

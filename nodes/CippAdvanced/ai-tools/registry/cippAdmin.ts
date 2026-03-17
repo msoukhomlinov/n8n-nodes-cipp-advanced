@@ -259,7 +259,7 @@ export const resourceConfig: ResourceConfig = {
 				Action: P.qs('Webhook action'),
 				CorrelationId: P.qs('Correlation ID'),
 				enabled: P.bodyBool('Enable webhook'),
-				EventType: P.body('Event type'),
+				EventType: P.bodyJson('Event type (LabelValue JSON)'),
 				standardsExcludeAllTenants: P.bodyBool('Exclude all tenants from standards'),
 			},
 			description: 'Manage partner webhook subscriptions',

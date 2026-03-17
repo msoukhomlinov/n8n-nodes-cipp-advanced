@@ -522,6 +522,13 @@ export const cippCoreFields: INodeProperties[] = [
 				description: 'General filter expression',
 			},
 			{
+				displayName: 'List Logs',
+				name: 'ListLogs',
+				type: 'string',
+				default: '',
+				description: 'List logs flag parameter',
+			},
+			{
 				displayName: 'Log Entry ID',
 				name: 'logentryid',
 				type: 'string',
