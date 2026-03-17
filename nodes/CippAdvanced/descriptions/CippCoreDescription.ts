@@ -37,16 +37,16 @@ export const cippCoreOperations: INodeProperties[] = [
 				action: 'Get app status',
 			},
 			{
-				name: 'Get External Tenant Info',
-				value: 'getExternalTenantInfo',
-				description: 'Look up information about an external tenant',
-				action: 'Get external tenant info',
-			},
-			{
 				name: 'Get CIPP Alerts',
 				value: 'getCippAlerts',
 				description: 'Get CIPP platform health monitoring alerts',
 				action: 'Get CIPP alerts',
+			},
+			{
+				name: 'Get External Tenant Info',
+				value: 'getExternalTenantInfo',
+				description: 'Look up information about an external tenant',
+				action: 'Get external tenant info',
 			},
 			{
 				name: 'Get Version',
@@ -67,6 +67,12 @@ export const cippCoreOperations: INodeProperties[] = [
 				action: 'List function stats',
 			},
 			{
+				name: 'List GitHub Release Notes',
+				value: 'listGitHubReleaseNotes',
+				description: 'List GitHub release notes for CIPP',
+				action: 'List git hub release notes',
+			},
+			{
 				name: 'List Known IP Database',
 				value: 'listKnownIpDb',
 				description: 'List known IP database entries for a tenant',
@@ -77,12 +83,6 @@ export const cippCoreOperations: INodeProperties[] = [
 				value: 'listLogs',
 				description: 'List CIPP audit and monitoring logs with filters',
 				action: 'List logs',
-			},
-			{
-				name: 'List GitHub Release Notes',
-				value: 'listGitHubReleaseNotes',
-				description: 'List GitHub release notes for CIPP',
-				action: 'List git hub release notes',
 			},
 			{
 				name: 'Manage Durable Functions',
