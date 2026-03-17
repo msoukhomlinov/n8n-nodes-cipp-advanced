@@ -45,10 +45,40 @@ export const cippAdminOperations: INodeProperties[] = [
 				action: 'Get ninja one queue',
 			},
 			{
+				name: 'List Extension Alerts',
+				value: 'listExtAlerts',
+				description: 'List extension alert monitoring results for a tenant',
+				action: 'List extension alerts',
+			},
+			{
 				name: 'List Extension Sync',
 				value: 'listExtensionSync',
 				description: 'List extension synchronization status',
 				action: 'List extension sync',
+			},
+			{
+				name: 'List Pending Webhooks',
+				value: 'listPendingWebhooks',
+				description: 'List pending webhook deliveries',
+				action: 'List pending webhooks',
+			},
+			{
+				name: 'Manage Partner Webhook',
+				value: 'managePartnerWebhook',
+				description: 'Manage partner webhook subscriptions',
+				action: 'Manage partner webhook',
+			},
+			{
+				name: 'Refresh CPV (All Tenants)',
+				value: 'refreshCpvAll',
+				description: 'Trigger a bulk CPV refresh for all tenants',
+				action: 'Refresh CPV for all tenants',
+			},
+			{
+				name: 'Refresh CPV Permissions',
+				value: 'refreshCpvPermissions',
+				description: 'Refresh CPV consent permissions for a specific tenant',
+				action: 'Refresh CPV permissions',
 			},
 			{
 				name: 'Run Combined Setup',
@@ -145,7 +175,7 @@ export const cippAdminFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: [RESOURCE],
-				operation: ['getExtensionCacheData'],
+				operation: ['getExtensionCacheData', 'refreshCpvPermissions', 'listExtAlerts'],
 			},
 		},
 		modes: [
@@ -837,6 +867,112 @@ export const cippAdminFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'The name of the extension to test',
+			},
+		],
+	},
+
+	// ── Return All / Limit for list operations ──────────────────
+	{
+		displayName: 'Return All',
+		name: 'returnAll',
+		type: 'boolean',
+		default: false,
+		description: 'Whether to return all results or only up to a given limit',
+		displayOptions: {
+			show: {
+				resource: [RESOURCE],
+				operation: ['listPendingWebhooks', 'listExtAlerts'],
+			},
+		},
+	},
+	{
+		displayName: 'Limit',
+		name: 'limit',
+		type: 'number',
+		default: 50,
+		description: 'Max number of results to return',
+		typeOptions: { minValue: 1, maxValue: 500 },
+		displayOptions: {
+			show: {
+				resource: [RESOURCE],
+				operation: ['listPendingWebhooks', 'listExtAlerts'],
+				returnAll: [false],
+			},
+		},
+	},
+
+	// ── refreshCpvPermissions ─────────────────────────────────────
+	{
+		displayName: 'Additional Fields',
+		name: 'cpvPermissionsFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: [RESOURCE],
+				operation: ['refreshCpvPermissions'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Reset Service Principal',
+				name: 'ResetSP',
+				type: 'string',
+				default: '',
+				description: 'Reset the service principal (pass any value to trigger)',
+			},
+		],
+	},
+
+	// ── managePartnerWebhook ──────────────────────────────────────
+	{
+		displayName: 'Additional Fields',
+		name: 'partnerWebhookFields',
+		type: 'collection',
+		placeholder: 'Add Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: [RESOURCE],
+				operation: ['managePartnerWebhook'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Action',
+				name: 'Action',
+				type: 'string',
+				default: '',
+				description: 'The webhook action to perform',
+			},
+			{
+				displayName: 'Correlation ID',
+				name: 'CorrelationId',
+				type: 'string',
+				default: '',
+				description: 'Correlation ID for the webhook operation',
+			},
+			{
+				displayName: 'Enabled',
+				name: 'enabled',
+				type: 'boolean',
+				default: true,
+				description: 'Whether the webhook is enabled',
+			},
+			{
+				displayName: 'Event Type',
+				name: 'EventType',
+				type: 'string',
+				default: '',
+				description: 'The event type to subscribe to',
+			},
+			{
+				displayName: 'Exclude All Tenants from Standards',
+				name: 'standardsExcludeAllTenants',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to exclude all tenants from standards processing',
 			},
 		],
 	},

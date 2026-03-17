@@ -3,6 +3,7 @@ import { NodeOperationError } from 'n8n-workflow';
 import {
 	cippApiRequest,
 	getTenantFilter,
+	listWithSlice,
 	parseJsonObjectPayload,
 } from '../GenericFunctions';
 
@@ -216,6 +217,51 @@ export async function execute(
 		const qs: IDataObject = {};
 		if (fields.extensionName) qs.extensionName = fields.extensionName;
 		return cippApiRequest.call(context, 'GET', '/api/ExecExtensionTest', {}, qs);
+	}
+
+	// ══════════════════════════════════════════════════════════════
+	// CPV / Onboarding
+	// ══════════════════════════════════════════════════════════════
+
+	if (operation === 'refreshCpvPermissions') {
+		const tenantFilter = getTenantFilter(context, i);
+		const fields = context.getNodeParameter('cpvPermissionsFields', i, {}) as IDataObject;
+		const qs: IDataObject = {};
+		if (fields.ResetSP) qs.ResetSP = fields.ResetSP;
+		return cippApiRequest.call(context, 'POST', '/api/ExecCPVPermissions', { tenantFilter }, qs);
+	}
+
+	if (operation === 'refreshCpvAll') {
+		return cippApiRequest.call(context, 'GET', '/api/ExecCPVRefresh');
+	}
+
+	// ══════════════════════════════════════════════════════════════
+	// Webhooks
+	// ══════════════════════════════════════════════════════════════
+
+	if (operation === 'managePartnerWebhook') {
+		const fields = context.getNodeParameter('partnerWebhookFields', i, {}) as IDataObject;
+		const qs: IDataObject = {};
+		if (fields.Action) qs.Action = fields.Action;
+		if (fields.CorrelationId) qs.CorrelationId = fields.CorrelationId;
+		const body: IDataObject = {};
+		if (fields.enabled !== undefined) body.enabled = fields.enabled;
+		if (fields.EventType) body.EventType = fields.EventType;
+		if (fields.standardsExcludeAllTenants !== undefined) body.standardsExcludeAllTenants = fields.standardsExcludeAllTenants;
+		return cippApiRequest.call(context, 'POST', '/api/ExecPartnerWebhook', body, qs);
+	}
+
+	if (operation === 'listPendingWebhooks') {
+		return listWithSlice(context, i, 'GET', '/api/ListPendingWebhooks', {}, {});
+	}
+
+	// ══════════════════════════════════════════════════════════════
+	// Extension Alerts
+	// ══════════════════════════════════════════════════════════════
+
+	if (operation === 'listExtAlerts') {
+		const tenantFilter = getTenantFilter(context, i);
+		return listWithSlice(context, i, 'GET', '/api/ListCheckExtAlerts', {}, { tenantFilter });
 	}
 
 	throw new NodeOperationError(
