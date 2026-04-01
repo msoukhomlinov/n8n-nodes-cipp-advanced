@@ -2,6 +2,24 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.1.4] - 2026-04-02
+
+### Fixed
+
+- AI Tools `execute()` now returns a stub message on editor "Test step" instead of silently executing the first operation
+- AI Tools `execute()` validates requested operation and returns `INVALID_OPERATION` error for unknown/disabled ops
+- AI Tools `execute()` detects tool calls via `item.json.operation` (n8n 2.14+) or `item.json.tool` (older)
+- Corrected write-safety layer comment numbering (Layer 3 for execute() path)
+
+### Changed
+
+- AI Tools runtime uses Proxy pattern for deferred errors — node registers even if LangChain unavailable
+- AI Tools schema generator handles both Zod v3 and v4 internal structures for forward compatibility
+
+### Removed
+
+- Unused `MISSING_ENTITY_ID` error type (missing IDs already handled by `MISSING_REQUIRED_FIELD`)
+
 ## [1.1.3] - 2026-03-17
 
 ### Added

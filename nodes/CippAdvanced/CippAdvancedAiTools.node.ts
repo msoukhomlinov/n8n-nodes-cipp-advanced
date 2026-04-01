@@ -161,8 +161,8 @@ export class CippAdvancedAiTools implements INodeType {
 				}
 
 				const { operation: _operation, ...operationParams } = params;
-			void _operation; // consumed above
-				return executeAiTool(this, resource, operation, operationParams);
+					void _operation; // consumed above
+					return executeAiTool(this, resource, operation, operationParams);
 			},
 		});
 
@@ -197,10 +197,18 @@ export class CippAdvancedAiTools implements INodeType {
 			const item = items[itemIndex];
 			if (!item) continue;
 
-			const requestedOp = item.json.operation as string | undefined;
+			// Detect tool call via operation (n8n 2.14+) or tool (older) — return stub when neither present
+			const requestedOp = (item.json.operation ?? item.json.tool) as string | undefined;
+			if (!requestedOp) {
+				response.push({
+					json: { message: `CIPP ${config.label} tool is ready. Operations: ${effectiveOps.join(', ')}.` },
+					pairedItem: { item: itemIndex },
+				});
+				continue;
+			}
 
-			// Layer 2: Write safety — execute() path
-			if (requestedOp && isWriteOperation(requestedOp, config) && !allowWriteOperations) {
+			// Layer 3: Write safety — execute() path
+			if (isWriteOperation(requestedOp, config) && !allowWriteOperations) {
 				response.push({
 					json: parseToolResult(JSON.stringify(wrapError(
 						resource, requestedOp, ERROR_TYPES.WRITE_OPERATION_BLOCKED,
@@ -212,9 +220,19 @@ export class CippAdvancedAiTools implements INodeType {
 				continue;
 			}
 
-			const effectiveOp = (requestedOp && effectiveOps.includes(requestedOp))
-				? requestedOp
-				: effectiveOps[0] ?? '';
+			if (!effectiveOps.includes(requestedOp)) {
+				response.push({
+					json: parseToolResult(JSON.stringify(wrapError(
+						resource, requestedOp, ERROR_TYPES.INVALID_OPERATION,
+						`Unknown or disabled operation: ${requestedOp}`,
+						`Allowed operations: ${effectiveOps.join(', ')}.`,
+					))),
+					pairedItem: { item: itemIndex },
+				});
+				continue;
+			}
+
+			const effectiveOp = requestedOp;
 
 			try {
 				const params = stripExecuteMetadata(item.json as Record<string, unknown>);
