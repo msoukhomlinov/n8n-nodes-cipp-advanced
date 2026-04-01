@@ -28,7 +28,7 @@ function getRuntimeRequire(): { runtimeReq: any; diagnostic: string | null } {
 	for (const anchor of ANCHOR_CANDIDATES) {
 		try {
 			const anchorPath = require.resolve(anchor) as string;
-			// eslint-disable-next-line @typescript-eslint/no-require-imports, @n8n/community-nodes/no-restricted-imports
+			// eslint-disable-next-line @n8n/community-nodes/no-restricted-imports
 			const { createRequire } = require('module') as {
 				createRequire: (filename: string) => NodeRequire;
 			};
@@ -43,7 +43,6 @@ function getRuntimeRequire(): { runtimeReq: any; diagnostic: string | null } {
 	const diagnostic =
 		`[CippAdvancedAiTools] No runtime anchor found. Tried: ${ANCHOR_CANDIDATES.join(', ')}. ` +
 		`Errors: ${errors.join(' | ')}`;
-	console.warn(diagnostic);
 	return { runtimeReq: null, diagnostic };
 }
 
@@ -57,17 +56,16 @@ let _runtimeZod: RuntimeZod | undefined;
 
 if (runtimeReq) {
 	try {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const coreTools = runtimeReq('@langchain/core/tools') as Record<string, unknown>;
 		_RuntimeDynamicStructuredTool = coreTools['DynamicStructuredTool'] as DynamicStructuredToolCtor;
-	} catch (e) {
-		console.warn('[CippAdvancedAiTools] Failed to resolve @langchain/core/tools from runtime require:', e);
+	} catch {
+		// Resolution failure surfaces through the Proxy as a NodeOperationError when tools are invoked
 	}
 
 	try {
 		_runtimeZod = runtimeReq('zod') as RuntimeZod;
-	} catch (e) {
-		console.warn('[CippAdvancedAiTools] Failed to resolve zod from runtime require:', e);
+	} catch {
+		// Resolution failure surfaces through the Proxy as a NodeOperationError when tools are invoked
 	}
 }
 
@@ -76,7 +74,6 @@ if (runtimeReq) {
 // Plain objects lack [[Construct]], so `new Proxy({}, ...)` throws
 // "is not a constructor" before the construct trap fires.
 export const RuntimeDynamicStructuredTool: DynamicStructuredToolCtor = new Proxy(
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	function () {} as unknown as DynamicStructuredToolCtor,
 	{
 		construct(_target, args) {

@@ -194,7 +194,6 @@ function toRuntimeZodSchema(schema: any, runtimeZ: RuntimeZod): any {
 		// Zod v4: values at schema.options (array) or _def.entries (object)  |  Zod v3: _def.values
 		case 'enum':     case 'ZodEnum': {
 			const enumVals: string[] = schema.options ??
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				(def.entries ? Object.values(def.entries as Record<string, string>) : undefined) ??
 				def.values ?? [];
 			converted = runtimeZ.enum(enumVals as [string, ...string[]]);
@@ -239,7 +238,6 @@ function toRuntimeZodSchema(schema: any, runtimeZ: RuntimeZod): any {
 			converted = runtimeZ.literal(Array.isArray(def.values) ? def.values[0] : def.value); break;
 		// ── Union ─────────────────────────────────────────────────────────
 		case 'union':    case 'ZodUnion':
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			converted = runtimeZ.union((def.options ?? []).map((o: unknown) => toRuntimeZodSchema(o, runtimeZ))); break;
 		default:         converted = runtimeZ.unknown(); break;
 	}
