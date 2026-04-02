@@ -2,6 +2,12 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.1.5] - 2026-04-02
+
+### Fixed
+
+- AI Tools `execute()` path now strips `Prompt__*` framework fields injected by Agent Tool Node v3 (`$fromAI()`-generated keys), preventing them from leaking into field validation and causing `INVALID_WRITE_FIELDS` errors on write operations
+
 ## [1.1.4] - 2026-04-02
 
 ### Fixed

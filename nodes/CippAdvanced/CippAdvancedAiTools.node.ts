@@ -20,10 +20,14 @@ function parseToolResult(resultJson: string): IDataObject {
 	catch { return { error: resultJson }; }
 }
 
+const N8N_METADATA_PREFIXES = ['Prompt__'];
+
 function stripExecuteMetadata(params: Record<string, unknown>): Record<string, unknown> {
 	const cleaned: Record<string, unknown> = {};
 	for (const [key, value] of Object.entries(params)) {
-		if (!N8N_METADATA_FIELDS.has(key)) cleaned[key] = value;
+		if (N8N_METADATA_FIELDS.has(key)) continue;
+		if (N8N_METADATA_PREFIXES.some((p) => key.startsWith(p))) continue;
+		cleaned[key] = value;
 	}
 	return cleaned;
 }

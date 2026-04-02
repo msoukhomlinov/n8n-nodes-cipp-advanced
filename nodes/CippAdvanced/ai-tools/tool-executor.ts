@@ -7,6 +7,8 @@ import { RESOURCE_REGISTRY } from './registry';
 import { N8N_METADATA_FIELDS } from './registry/types';
 import { cippApiRequest } from '../GenericFunctions';
 
+const N8N_METADATA_PREFIXES = ['Prompt__'];
+
 /**
  * Execute a CIPP AI tool operation using the registry.
  * Called from both func() (MCP Trigger path) and execute() (AI Agent path).
@@ -20,7 +22,9 @@ export async function executeAiTool(
 	// Strip n8n framework metadata at entry — before any routing
 	const params: Record<string, unknown> = {};
 	for (const [key, value] of Object.entries(rawParams)) {
-		if (!N8N_METADATA_FIELDS.has(key)) params[key] = value;
+		if (N8N_METADATA_FIELDS.has(key)) continue;
+		if (N8N_METADATA_PREFIXES.some((p) => key.startsWith(p))) continue;
+		params[key] = value;
 	}
 
 	// Look up resource in registry
