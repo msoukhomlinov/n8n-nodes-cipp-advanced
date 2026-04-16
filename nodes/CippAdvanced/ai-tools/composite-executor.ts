@@ -222,7 +222,7 @@ async function securityPosture(
 	if (basicAuthEnabled) score -= 20;
 	if (!requireMfa) score -= 15;
 	if (!blockLegacyAuth) score -= 10;
-	if (!defenderEnabled && s4.ok) score -= 15;
+	if (!defenderEnabled) score -= 15;
 	score = Math.max(0, score);
 
 	return {
@@ -481,6 +481,9 @@ async function executeCompositeInternal(
 ): Promise<CompositeResult> {
 	if (insideSweep && operation === 'crossTenantSweep') {
 		throw new Error('Recursive crossTenantSweep is not allowed');
+	}
+	if (insideSweep && operation === 'user360') {
+		throw new Error('user360 cannot be used as a crossTenantSweep sub-composite');
 	}
 	switch (operation) {
 		case 'licenseAudit':
