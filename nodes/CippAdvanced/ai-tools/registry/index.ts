@@ -30,6 +30,7 @@ import { resourceConfig as tools } from './tools';
 import { resourceConfig as transport } from './transport';
 import { resourceConfig as user } from './user';
 import { resourceConfig as voice } from './voice';
+import { resourceConfig as workflows } from './workflows';
 
 export const RESOURCE_REGISTRY: Record<string, ResourceConfig> = {
 	alert,
@@ -60,4 +61,5 @@ export const RESOURCE_REGISTRY: Record<string, ResourceConfig> = {
 	transport,
 	user,
 	voice,
+	workflows,
 };
