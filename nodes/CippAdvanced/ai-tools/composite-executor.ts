@@ -117,9 +117,9 @@ async function licenseAudit(
 	const unusedSkus: IDataObject[] = [];
 	for (const sku of licenses) {
 		const prepaid = sku.prepaidUnits as IDataObject | undefined;
-		const total =
-			(typeof prepaid?.enabled === 'number' ? prepaid.enabled : 0) ||
-			(typeof sku.totalCount === 'number' ? sku.totalCount : 0);
+		const fromPrepaid = typeof prepaid?.enabled === 'number' ? prepaid.enabled : null;
+		const fromTotal = typeof sku.totalCount === 'number' ? sku.totalCount : 0;
+		const total = fromPrepaid !== null ? fromPrepaid : fromTotal;
 		const used = typeof sku.consumedUnits === 'number' ? sku.consumedUnits : 0;
 		totalSeats += total;
 		usedSeats += used;
@@ -329,6 +329,9 @@ async function user360(
 	failMode: 'fast' | 'bestEffort',
 ): Promise<CompositeResult> {
 	const userId = params.userId as string;
+	if (!userId) {
+		throw new CompositeStepError('user360.validation', 'Required parameter userId is missing');
+	}
 	const steps: StepResult[] = [];
 
 	// Step 1: User profile — registry param UserID (capital I)
