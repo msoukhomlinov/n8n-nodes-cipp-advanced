@@ -25,7 +25,7 @@ export class CippAdvanced implements INodeType {
 		group: ['output'],
 		version: 1,
 		subtitle: '={{$parameter["resource"] + ": " + $parameter["operation"]}}',
-		description: 'Advanced Microsoft 365 multi-tenant management via CIPP.app (460 operations, 28 resources)',
+		description: 'Advanced Microsoft 365 multi-tenant management via CIPP.app (465 operations, 29 resources)',
 		defaults: {
 			name: 'CIPP Advanced',
 		},
@@ -184,6 +184,11 @@ export class CippAdvanced implements INodeType {
 						name: 'Voice',
 						value: 'voice',
 						description: 'Manage Teams Voice',
+					},
+					{
+						name: 'Workflows',
+						value: 'workflows',
+						description: 'Multi-step composite workflows: license audit, security posture, BEC investigation, user 360, cross-tenant sweep',
 					},
 				],
 				default: 'tenant',
