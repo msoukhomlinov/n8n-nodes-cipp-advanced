@@ -14,6 +14,18 @@ export const workflowsOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				name: 'BEC Investigation',
+				value: 'becInvestigation',
+				description: 'Investigate business email compromise: suspicious sign-ins, forwarding rules, OAuth apps',
+				action: 'Run BEC investigation',
+			},
+			{
+				name: 'Cross-Tenant Sweep',
+				value: 'crossTenantSweep',
+				description: 'Run a composite operation across all managed tenants (up to 50)',
+				action: 'Run cross tenant sweep',
+			},
+			{
 				name: 'License Audit',
 				value: 'licenseAudit',
 				description: 'Audit license waste: disabled/inactive users holding licenses, unused SKUs, estimated saving',
@@ -26,22 +38,10 @@ export const workflowsOperations: INodeProperties[] = [
 				action: 'Run security posture check',
 			},
 			{
-				name: 'BEC Investigation',
-				value: 'becInvestigation',
-				description: 'Investigate business email compromise: suspicious sign-ins, forwarding rules, OAuth apps',
-				action: 'Run BEC investigation',
-			},
-			{
 				name: 'User 360',
 				value: 'user360',
 				description: 'Full user profile snapshot: groups, devices, mailbox, MFA status, recent sign-ins',
 				action: 'Run user 360',
-			},
-			{
-				name: 'Cross-Tenant Sweep',
-				value: 'crossTenantSweep',
-				description: 'Run a composite operation across all managed tenants (up to 50)',
-				action: 'Run cross-tenant sweep',
 			},
 		],
 		default: 'licenseAudit',
@@ -108,8 +108,7 @@ export const workflowsFields: INodeProperties[] = [
 		},
 		default: '',
 		// Required for user360, optional for becInvestigation — enforce required at runtime via actions/workflows.ts
-		description: 'User ID or UPN to scope the operation. Required for User 360, optional for BEC Investigation',
-		required: false,
+		description: 'User ID or UPN to scope the operation. Required for User 360, optional for BEC Investigation.',
 	},
 
 	// ── Lookback Days — becInvestigation only ──
@@ -151,7 +150,7 @@ export const workflowsFields: INodeProperties[] = [
 
 	// ── Tenant IDs — crossTenantSweep only ──
 	{
-		displayName: 'Tenant IDs (optional)',
+		displayName: 'Tenant IDs (Optional)',
 		name: 'tenantIds',
 		type: 'string',
 		displayOptions: {
@@ -161,7 +160,7 @@ export const workflowsFields: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'Comma-separated tenant IDs or domain names to scope the sweep. Leave empty to sweep all tenants',
+		description: 'Comma-separated tenant IDs or domain names to scope the sweep. Leave empty to sweep all tenants.',
 	},
 
 	// ── Max Tenants — crossTenantSweep only ──

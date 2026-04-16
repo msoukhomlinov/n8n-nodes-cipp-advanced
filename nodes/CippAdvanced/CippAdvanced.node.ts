@@ -186,7 +186,7 @@ export class CippAdvanced implements INodeType {
 						description: 'Manage Teams Voice',
 					},
 					{
-						name: 'Workflows',
+						name: 'Workflow',
 						value: 'workflows',
 						description: 'Multi-step composite workflows: license audit, security posture, BEC investigation, user 360, cross-tenant sweep',
 					},

@@ -1,7 +1,6 @@
 // ai-tools/registry/workflows.ts
 // Composite workflow operations — multi-step, AI-friendly MSP automation.
-import type { ResourceConfig } from './types';
-import type { CompositeOperationDef } from './types';
+import type { ResourceConfig, CompositeOperationDef } from './types';
 import { P, TENANT } from './types';
 
 const licenseAudit: CompositeOperationDef = {

@@ -1,7 +1,6 @@
 // ai-tools/composite-executor.ts
 // Multi-step composite workflow executor — shared by both AI Tools and standard node surfaces.
-import type { IExecuteFunctions, ISupplyDataFunctions, IDataObject } from 'n8n-workflow';
-import type { IHttpRequestMethods } from 'n8n-workflow';
+import type { IExecuteFunctions, ISupplyDataFunctions, IDataObject, IHttpRequestMethods } from 'n8n-workflow';
 import { cippApiRequest, getTenantList } from '../GenericFunctions';
 import type { ITenant } from '../types';
 import { wrapSuccess, wrapError, ERROR_TYPES } from './error-formatter';
