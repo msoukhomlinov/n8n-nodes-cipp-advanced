@@ -177,15 +177,16 @@ async function securityPosture(
 	const s4 = await apiStep(ctx, 'tenant.listDefenderState', 'GET', '/api/ListDefenderState', { tenantFilter });
 	steps.push(s4);
 
-	// MFA analysis — CIPP returns users with MFAEnabled, PerUserMFAState, and role info
+	// MFA analysis — CIPP ListMFAUsers fields: MFARegistration (bool), PerUser (string),
+	// IsAdmin (bool), UPN (string), CoveredByCA (string)
 	const mfaUsers = toArray(s1.data);
 	const usersWithoutMfa = mfaUsers
-		.filter((u) => !u.MFAEnabled && !u.PerUserMFAState)
-		.map((u) => (u.userPrincipalName ?? u.UPN ?? u.id) as string)
+		.filter((u) => !u.MFARegistration)
+		.map((u) => (u.UPN ?? u.DisplayName) as string)
 		.filter(Boolean);
 	const adminGaps = mfaUsers
-		.filter((u) => (u.isAdminUser || u.memberOf) && !u.MFAEnabled)
-		.map((u) => (u.userPrincipalName ?? u.UPN) as string)
+		.filter((u) => u.IsAdmin === true && !u.MFARegistration)
+		.map((u) => (u.UPN ?? u.DisplayName) as string)
 		.filter(Boolean);
 	const coveredPct =
 		mfaUsers.length > 0
@@ -206,7 +207,11 @@ async function securityPosture(
 	const blockLegacyAuth = caPolicies.some((p) => {
 		const conditions = p.conditions as IDataObject | undefined;
 		const clientAppTypes = (conditions?.clientAppTypes as string[]) ?? [];
-		return clientAppTypes.includes('exchangeActiveSync') || clientAppTypes.includes('other');
+		const targetsLegacy = clientAppTypes.includes('exchangeActiveSync') || clientAppTypes.includes('other');
+		const controls = p.grantControls as IDataObject | undefined;
+		const builtIn = controls?.builtInControls as string[] | undefined;
+		const blocks = Array.isArray(builtIn) && builtIn.includes('block');
+		return targetsLegacy && blocks;
 	});
 
 	// Defender state
@@ -256,10 +261,9 @@ async function becInvestigation(
 	steps.push(s1);
 	failFast(s1, failMode);
 
-	// Step 2: Mailbox rules — UserID is the registry param name (capital I)
-	const rulesQs: IDataObject = { tenantFilter };
-	if (userId) rulesQs.UserID = userId;
-	const s2 = await apiStep(ctx, 'user.listUserMailboxRules', 'GET', '/api/ListUserMailboxRules', rulesQs);
+	// Step 2: Mailbox rules — tenant-wide (/api/ListMailboxRules); /api/ListUserMailboxRules
+	// requires UserID and returns empty without it, so use tenant-wide and filter client-side
+	const s2 = await apiStep(ctx, 'mailbox.listMailboxRules', 'GET', '/api/ListMailboxRules', { tenantFilter });
 	steps.push(s2);
 	failFast(s2, failMode);
 
@@ -285,9 +289,10 @@ async function becInvestigation(
 			(s) => s.userId === userId || s.userPrincipalName === userId,
 		);
 	}
-	const suspiciousSignIns = signIns.filter(
-		(s) => s.riskState === 'atRisk' || s.riskDetail !== 'none' || (s.status as IDataObject)?.errorCode !== 0,
-	);
+	const suspiciousSignIns = signIns.filter((s) => {
+		const errorCode = (s.status as IDataObject)?.errorCode;
+		return s.riskState === 'atRisk' || s.riskDetail !== 'none' || (typeof errorCode === 'number' && errorCode !== 0);
+	});
 
 	const mailboxRules = toArray(s2.data);
 	const externalForwardingRules = mailboxRules.filter((r) => {
