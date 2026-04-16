@@ -29,6 +29,7 @@ import * as tools from './tools';
 import * as transport from './transport';
 import * as user from './user';
 import * as voice from './voice';
+import * as workflows from './workflows';
 
 type ResourceHandler = {
 	execute: (
@@ -66,7 +67,8 @@ type ResourceName =
 	| 'tools'
 	| 'transport'
 	| 'user'
-	| 'voice';
+	| 'voice'
+	| 'workflows';
 
 const resourceHandlers = {
 	alert,
@@ -97,6 +99,7 @@ const resourceHandlers = {
 	transport,
 	user,
 	voice,
+	workflows,
 } satisfies Record<ResourceName, ResourceHandler>;
 
 export async function router(
