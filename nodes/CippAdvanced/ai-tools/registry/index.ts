@@ -1,5 +1,5 @@
 import type { ResourceConfig } from './types';
-export type { ResourceConfig, OperationDef, ParamDef } from './types';
+export type { ResourceConfig, OperationDef, CompositeOperationDef, AnyOperationDef, ParamDef } from './types';
 export { TENANT, P, N8N_METADATA_FIELDS, isWriteOperation } from './types';
 
 import { resourceConfig as alert } from './alert';

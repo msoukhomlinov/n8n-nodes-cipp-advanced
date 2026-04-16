@@ -4,7 +4,7 @@ import { z } from 'zod';
 // NOTE: z is a compile-time VALUE import — we need z.object(), z.string() etc. at build time.
 // Only runtime classes (DynamicStructuredTool, ZodType) come from runtime.ts.
 import type { RuntimeZod } from './runtime';
-import type { OperationDef, ParamDef } from './registry';
+import type { AnyOperationDef, ParamDef } from './registry';
 import { RESOURCE_REGISTRY } from './registry';
 
 const OPERATION_LABELS: Record<string, string> = {
@@ -46,7 +46,7 @@ function paramToZodField(param: ParamDef): z.ZodTypeAny {
 	return field.describe(param.description);
 }
 
-function getSchemaForOperation(opDef: OperationDef): z.ZodObject<z.ZodRawShape> {
+function getSchemaForOperation(opDef: AnyOperationDef): z.ZodObject<z.ZodRawShape> {
 	const shape: z.ZodRawShape = {};
 
 	// Add tenantFilter if the operation uses it
