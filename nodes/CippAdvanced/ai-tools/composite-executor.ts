@@ -24,6 +24,17 @@ interface CompositeResult {
 	result: unknown;
 }
 
+interface SecureScoreCategoryRollup {
+	maxScore: number;
+	currentScore: number;
+}
+
+interface SecureScoreMissedControl {
+	controlName: string;
+	maxScore: number;
+	description: string;
+}
+
 /** Thrown by composite fns in fast mode when a step fails — caught by executeComposite */
 class CompositeStepError extends Error {
 	constructor(
@@ -323,8 +334,6 @@ async function securityPosture(
 	}
 
 	// ── Secure Score ─────────────────────────────────────────────────
-	type SecureScoreCategoryRollup = { maxScore: number; currentScore: number };
-	type SecureScoreMissedControl = { controlName: string; maxScore: number; description: string };
 	let secureScore: {
 		currentScore: number;
 		maxScore: number;
@@ -354,7 +363,8 @@ async function securityPosture(
 
 			const topMissedControls: SecureScoreMissedControl[] = rawControlScores
 				.filter((cs) => {
-					const userScore = typeof cs.userScore === 'number' ? cs.userScore : (cs.userScore ?? 1);
+					// Treat non-numeric userScore as achieved (safer default — don't flag unknowns as missed)
+					const userScore = typeof cs.userScore === 'number' ? cs.userScore : 1;
 					return userScore === 0;
 				})
 				.sort((a, b) => {
