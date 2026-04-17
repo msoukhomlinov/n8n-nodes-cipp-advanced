@@ -285,7 +285,11 @@ async function securityPosture(
 	// ── Email: Policies ──────────────────────────────────────────────
 	// Treat absent Enabled field as enabled (field name varies; absence ≠ disabled)
 	const isPolicyEnabled = (p: IDataObject): boolean =>
-		p.Enabled !== false && p.IsEnabled !== false && p.enabled !== false;
+		p.Enabled !== false &&
+		p.IsEnabled !== false &&
+		p.enabled !== false &&
+		p.State !== 'Disabled' &&
+		p.state !== 'disabled';
 
 	const hasAntiPhishingPolicy = s5.ok && toArray(s5.data).some(isPolicyEnabled);
 	const hasSafeAttachments = s6.ok && toArray(s6.data).some(isPolicyEnabled);
