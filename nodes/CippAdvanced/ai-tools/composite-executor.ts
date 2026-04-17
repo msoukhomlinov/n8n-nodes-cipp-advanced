@@ -507,6 +507,15 @@ async function becInvestigation(
 		steps.push(s4);
 	}
 
+	// s5: Identity Protection risky users — best-effort; requires AAD P1/P2 licensing
+	// 403 = no Identity Protection license — fails gracefully
+	const s5 = await apiStep(ctx, 'security.riskyUsers', 'GET', '/api/ListGraphRequest', {
+		tenantFilter,
+		Endpoint: 'identityProtection/riskyUsers',
+		graphFilter: "riskState eq 'atRisk' or riskState eq 'confirmedCompromised'",
+	});
+	steps.push(s5);
+
 	// Shape results
 	let signIns = toArray(s1.data);
 	if (userId) {
@@ -595,6 +604,31 @@ async function becInvestigation(
 		}
 	}
 
+	// Parse s5 — Identity Protection risky users
+	type RiskyUser = {
+		id: unknown;
+		userPrincipalName: unknown;
+		riskLevel: unknown;
+		riskState: unknown;
+		riskDetail: unknown;
+	};
+	const riskyUsers: RiskyUser[] = [];
+	if (s5.ok) {
+		const rawRiskyUsers = toArray(s5.data);
+		for (const u of rawRiskyUsers) {
+			riskyUsers.push({
+				id: u.id,
+				userPrincipalName: u.userPrincipalName,
+				riskLevel: u.riskLevel,
+				riskState: u.riskState,
+				riskDetail: u.riskDetail,
+			});
+		}
+	}
+	const riskyUsersCount = riskyUsers.length;
+	const atRiskCount = riskyUsers.filter((u) => u.riskState === 'atRisk').length;
+	const confirmedCompromisedCount = riskyUsers.filter((u) => u.riskState === 'confirmedCompromised').length;
+
 	const oauthApps = toArray(s3.data);
 	const HIGH_RISK_SCOPES = new Set([
 		'Mail.ReadWrite', 'MailboxSettings.ReadWrite', 'Mail.Send',
@@ -611,6 +645,8 @@ async function becInvestigation(
 	riskScore += Math.min(40, suspiciousSignIns.length * 10);
 	riskScore += Math.min(30, (externalForwardingRules.length + smtpForwardingRules.length) * 15);
 	riskScore += Math.min(20, suspiciousOAuthApps.length * 5);
+	riskScore += Math.min(20, atRiskCount * 8);
+	riskScore += Math.min(30, confirmedCompromisedCount * 15);
 	if (s4?.ok && s4.data) riskScore = Math.min(100, riskScore + 10);
 	riskScore = Math.min(100, riskScore);
 
@@ -620,6 +656,8 @@ async function becInvestigation(
 		externalForwardingRules,
 		smtpForwardingRules,
 		suspiciousOAuthApps,
+		riskyUsersCount,
+		riskyUsers,
 		knownLimitations: [
 			'Hidden inbox rules (created with -Hidden flag in EXO PowerShell) are not accessible via CIPP API or Microsoft Graph. Run Get-InboxRule -IncludeHidden in EXO PowerShell for complete rule inventory.',
 		],
