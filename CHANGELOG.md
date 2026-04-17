@@ -2,6 +2,13 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.2.2] - 2026-04-17
+
+### Fixed
+
+- **Composite workflows — output size** — raw `.data` payload stripped from every entry in the composite `steps[]` array before the final envelope is built. Each step now returns metadata only: `{ step, ok, count?, error? }`. Previously `securityPosture` on a 300-user tenant returned ~2MB (steps embedded full MFA user objects with nested `CAPolicies[]`, full CA policy objects, and full Secure Score `controlScores[]`), exceeding n8n output size limits and burning AI token budgets. The processed composite `result` (indicators, gaps, summaries) is unchanged. Affects all five composites: `securityPosture`, `licenseAudit`, `becInvestigation`, `user360`, `crossTenantSweep` (including sub-composites)
+- **Composite workflows — step metadata** — new `count` field on each step reports the number of items in the raw response (via `toArray()`), giving the LLM visibility into data sizes without the payload. `crossTenantSweep`'s manual `tenant.getAll` step uses the actual tenant count directly
+
 ## [1.2.1] - 2026-04-17
 
 ### Added

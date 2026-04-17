@@ -15,6 +15,7 @@ interface StepResult {
 	ok: boolean;
 	data?: unknown;
 	error?: string;
+	count?: number;
 }
 
 interface CompositeResult {
@@ -65,7 +66,7 @@ async function apiStep(
 ): Promise<StepResult> {
 	try {
 		const data = await cippApiRequest.call(ctx, method, endpoint, body, qs);
-		return { step, ok: true, data };
+		return { step, ok: true, data, count: toArray(data).length };
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);
 		return { step, ok: false, error: msg };
@@ -1044,7 +1045,7 @@ async function crossTenantSweep(
 	let allTenants: ITenant[] = [];
 	try {
 		allTenants = await getTenantList.call(ctx);
-		steps.push({ step: 'tenant.getAll', ok: true, data: { count: allTenants.length } });
+		steps.push({ step: 'tenant.getAll', ok: true, count: allTenants.length });
 	} catch (error) {
 		const msg = error instanceof Error ? error.message : String(error);
 		steps.push({ step: 'tenant.getAll', ok: false, error: msg });
@@ -1149,12 +1150,21 @@ export async function executeComposite(
 			failMode,
 			false,
 		);
-		// Include steps array in result for LLM transparency (partial failure visibility)
+		// Strip raw .data from every step — keep only metadata (step, ok, count, error)
+		// to keep composite output compact. The composite's `result` already carries the
+		// processed/summarised output; `steps[]` is for LLM transparency into partial failures,
+		// not a place to echo back raw API payloads (which can reach 2MB+ for large tenants).
+		const slimSteps = compositeResult.steps.map(({ step, ok, count, error }) => ({
+			step,
+			ok,
+			...(count !== undefined && { count }),
+			...(error !== undefined && { error }),
+		}));
 		const resultWithSteps: Record<string, unknown> = {
 			...(compositeResult.result !== null && typeof compositeResult.result === 'object'
 				? (compositeResult.result as Record<string, unknown>)
 				: { data: compositeResult.result }),
-			steps: compositeResult.steps,
+			steps: slimSteps,
 		};
 		return JSON.stringify(wrapSuccess(resource, operation, resultWithSteps));
 	} catch (error) {

@@ -54,7 +54,7 @@ const securityPosture: CompositeOperationDef = {
 		'domainsTotal, domainsWithDmarc, domainsWithDkim, domainsWithSpfHardFail }, ' +
 		'governance { bpaFailingCount, bpaFailingItems[10] { report, question, value, tenant }, driftCount }, ' +
 		'data { sharingLevel } }, ' +
-		'gaps[], steps[]. ' +
+		'gaps[], steps[] { step, ok, count?, error? } (metadata only — no raw payloads). ' +
 		'NOTE: Safe Attachments/Safe Links gaps expected on tenants without Defender for Office 365. ' +
 		'Domain health gaps skipped if domain analyser not run. ' +
 		'Risky users step requires AAD P1/P2. MDO alerts step requires Defender for Office 365. ' +
