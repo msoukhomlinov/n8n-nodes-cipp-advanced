@@ -459,6 +459,15 @@ async function becInvestigation(
 	steps.push(s2);
 	failFast(s2, failMode);
 
+	// Step 2b: SMTP-level mailbox forwarding — separate from inbox rules.
+	// ForwardingSmtpAddress set via Set-Mailbox is invisible to inbox rule inspection.
+	// Best-effort: tenants without appropriate permissions return 403/empty.
+	const s2b = await apiStep(ctx, 'mailbox.listMailboxForwarding', 'GET', '/api/ListMailboxForwarding', {
+		tenantFilter,
+		UseReportDB: 'true',
+	});
+	steps.push(s2b);
+
 	// Step 3: OAuth apps
 	const s3 = await apiStep(ctx, 'tenant.listOAuthApps', 'GET', '/api/ListOAuthApps', { tenantFilter });
 	steps.push(s3);
@@ -537,6 +546,31 @@ async function becInvestigation(
 		}
 	}
 
+	// Parse s2b — SMTP-level forwarding configured directly on mailbox objects
+	type SmtpForwardingEntry = {
+		displayName: unknown;
+		userPrincipalName: unknown;
+		forwardingSmtpAddress: string;
+		deliverToMailboxAndForward: unknown;
+	};
+	const smtpForwardingRules: SmtpForwardingEntry[] = [];
+	if (s2b.ok) {
+		const fwdItems = toArray(s2b.data);
+		for (const item of fwdItems) {
+			// Field name varies — try known variants
+			const fwdAddr = (item.ForwardingSmtpAddress ?? item.forwardingSmtpAddress ?? item.ForwardingAddress ?? item.forwardingAddress ?? '') as string;
+			if (!fwdAddr) continue;
+			// Filter to external only when tenantDomain is known
+			if (tenantDomain && fwdAddr.toLowerCase().includes('@' + tenantDomain)) continue;
+			smtpForwardingRules.push({
+				displayName: item.DisplayName ?? item.displayName,
+				userPrincipalName: item.UserPrincipalName ?? item.userPrincipalName,
+				forwardingSmtpAddress: fwdAddr,
+				deliverToMailboxAndForward: item.DeliverToMailboxAndForward ?? item.deliverToMailboxAndForward,
+			});
+		}
+	}
+
 	const oauthApps = toArray(s3.data);
 	const suspiciousOAuthApps = oauthApps.filter(
 		(a) => a.riskLevel === 'high' || a.consentType === 'AllPrincipals',
@@ -545,7 +579,7 @@ async function becInvestigation(
 	// Risk score: additive based on findings
 	let riskScore = 0;
 	riskScore += Math.min(40, suspiciousSignIns.length * 10);
-	riskScore += Math.min(30, externalForwardingRules.length * 15);
+	riskScore += Math.min(30, (externalForwardingRules.length + smtpForwardingRules.length) * 15);
 	riskScore += Math.min(20, suspiciousOAuthApps.length * 5);
 	if (s4?.ok && s4.data) riskScore = Math.min(100, riskScore + 10);
 	riskScore = Math.min(100, riskScore);
@@ -554,7 +588,11 @@ async function becInvestigation(
 		riskScore,
 		suspiciousSignIns,
 		externalForwardingRules,
+		smtpForwardingRules,
 		suspiciousOAuthApps,
+		knownLimitations: [
+			'Hidden inbox rules (created with -Hidden flag in EXO PowerShell) are not accessible via CIPP API or Microsoft Graph. Run Get-InboxRule -IncludeHidden in EXO PowerShell for complete rule inventory.',
+		],
 	};
 	if (s4 !== null) {
 		result.becCheckResult = s4.ok ? (s4.data as IDataObject) : null;
