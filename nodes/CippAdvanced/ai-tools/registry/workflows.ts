@@ -37,21 +37,28 @@ const securityPosture: CompositeOperationDef = {
 		),
 	},
 	description:
-		'SECURITY POSTURE — runs 9 CIPP checks and returns observable indicators plus a ' +
+		'SECURITY POSTURE — runs 15 CIPP checks and returns observable indicators plus a ' +
 		'gaps[] array of plain-English findings (empty array on clean tenants, no numeric score). ' +
-		'Returns: secureScore { currentScore, maxScore, pct } | null (Microsoft Secure Score via ' +
-		'ListGraphRequest; null if SecurityEvents.Read.All not granted or no data), ' +
+		'Returns: secureScore { currentScore, maxScore, pct, byCategory { [category]: { maxScore, currentScore } }, ' +
+		'topMissedControls[5] { controlName, maxScore, description } } | null (Microsoft Secure Score; null if ' +
+		'SecurityEvents.Read.All not granted or no data), ' +
 		'indicators { identity { mfaCoveredPct, usersEvaluated, usersWithoutMfa[], ' +
 		'usersWithoutMfaTotal, adminGaps[], basicAuthEnabled, basicAuthProtocols[] }, ' +
 		'access { caPoliciesCount, caPoliciesEnabledCount, caPoliciesReportOnlyCount, ' +
-		'hasMfaRequirementPolicy, hasLegacyAuthBlockPolicy }, ' +
+		'hasMfaRequirementPolicy, hasLegacyAuthBlockPolicy, userConsentEnabled, consentPolicies[], ' +
+		'globalAdminCount, globalAdminUpns[] }, ' +
 		'endpoint { defenderStatus ("Active"|"PartiallyActive"|"Inactive"|"Unknown"), ' +
-		'defenderOnboardedPct, defenderOnboardedCount, defenderDeviceCount }, ' +
+		'defenderOnboardedPct, defenderOnboardedCount, defenderDeviceCount, ' +
+		'hasCompliancePolicies, compliancePoliciesCount }, ' +
 		'email { hasAntiPhishingPolicy, hasSafeAttachments, hasSafeLinks, ' +
-		'domainsTotal, domainsWithDmarc, domainsWithDkim, domainsWithSpfHardFail } }, ' +
+		'domainsTotal, domainsWithDmarc, domainsWithDkim, domainsWithSpfHardFail }, ' +
+		'governance { bpaFailingCount, bpaFailingItems[10] { report, question, value, tenant }, driftCount }, ' +
+		'data { sharingLevel } }, ' +
 		'gaps[], steps[]. ' +
-		'NOTE: Safe Attachments/Safe Links gaps are expected on tenants without Defender for Office 365 licensing. ' +
-		'Domain health gaps are skipped if domain analyser has not been run for the tenant.',
+		'NOTE: Safe Attachments/Safe Links gaps expected on tenants without Defender for Office 365. ' +
+		'Domain health gaps skipped if domain analyser not run. ' +
+		'Risky users step requires AAD P1/P2. MDO alerts step requires Defender for Office 365. ' +
+		'OAuth consent policy step requires Policy.Read.All on SAM app.',
 };
 
 const becInvestigation: CompositeOperationDef = {

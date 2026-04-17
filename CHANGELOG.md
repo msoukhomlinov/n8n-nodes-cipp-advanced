@@ -2,6 +2,20 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.2.0] - 2026-04-17
+
+### Added
+
+- **Security Posture** — expanded from 9 to 15 API steps with 4 new indicator categories:
+  - **s9 enrichment** — Secure Score response now includes `byCategory` roll-up (maxScore + currentScore per Microsoft category: Identity, Apps, Device, Data, Infrastructure) and `topMissedControls[]` (top 5 unachieved controls sorted by potential impact); types hoisted to module-scope interfaces
+  - **s10 `ListBPA`** — Best Practice Analyser failing checks; adds `governance.bpaFailingCount`, `governance.bpaFailingItems[]`; gap fired when any BPA check fails
+  - **s11 `ListTenantDrift`** — CIPP standards drift count; adds `governance.driftCount`; gap fired when standards are out of alignment
+  - **s12 `ListGraphRequest → policies/authorizationPolicy`** — OAuth user consent policy; adds `access.userConsentEnabled`, `access.consentPolicies[]`; gap fired when users can self-consent to OAuth apps
+  - **s13 `ListRoles`** — Global Administrator enumeration; adds `access.globalAdminCount`, `access.globalAdminUpns[]`; gap fired when count exceeds 5
+  - **s14 `ListCompliancePolicies`** — Intune compliance policy presence; adds `endpoint.hasCompliancePolicies`, `endpoint.compliancePoliciesCount`; gap fired when no policies configured
+  - **s15 `ListSharepointSettings`** — SharePoint external sharing level; adds `data.sharingLevel`; gap fired when Anyone links (unauthenticated access) enabled
+- All 6 new steps are best-effort (never trigger `failMode=fast`); failures surface in `steps[]` without blocking other checks
+
 ## [1.1.9] - 2026-04-17
 
 ### Added
