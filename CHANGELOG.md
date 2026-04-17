@@ -2,6 +2,17 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.2.1] - 2026-04-17
+
+### Added
+
+- **Tenant: Get Secure Score** — new `getSecureScore` operation fetches Microsoft Secure Score data for a tenant via `GET /api/ListGraphRequest → security/secureScores`; optional `includeControlProfiles` flag makes a second call to `security/secureScoreControlProfiles` and returns both as `{ scores[], controlProfiles[] }`; `historyCount` param controls how many historical entries are returned (default 1 = latest only)
+- **AI Tools: Get Secure Score Control Profiles** — new `getSecureScoreControlProfiles` AI registry entry fetches control metadata (id, title, maxScore, category, remediation, implementationCost) for all Secure Score controls; complements `getSecureScore` for full security posture analysis; requires `SecurityEvents.Read.All` on the SAM app
+
+### Fixed
+
+- **Tenant: Get Secure Score** — `historyCount=0` edge case guarded with `Math.max(1, ...)` so n8n expressions that evaluate to `0` cannot produce a `$top=0` Graph query (which returns empty results)
+
 ## [1.2.0] - 2026-04-17
 
 ### Added
