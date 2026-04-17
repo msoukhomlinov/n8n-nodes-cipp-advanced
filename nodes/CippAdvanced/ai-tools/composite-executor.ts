@@ -474,14 +474,18 @@ async function securityPosture(
 
 	if (s13.ok) {
 		const roleItems = toArray(s13.data);
-		// NOTE: field names (displayName, memberUPN etc.) are best-guess — validate against live ListRoles response
-		const globalAdminItems = roleItems.filter((r) => {
-			const name = String(r.displayName ?? r.DisplayName ?? r.RoleName ?? r.roleName ?? '');
-			return name.toLowerCase() === 'global administrator';
-		});
-		globalAdminCount = globalAdminItems.length;
-		globalAdminUpns = globalAdminItems
-			.map((r) => String(r.memberUPN ?? r.UserPrincipalName ?? r.upn ?? r.MemberEmail ?? r.memberEmail ?? ''))
+		// Each item is a role object with DisplayName (string) and Members[] (nested array).
+		// Global Administrator roleTemplateId is fixed across all tenants.
+		const GA_TEMPLATE_ID = '62e90394-69f5-4237-9190-012177145e10';
+		const gaRole = roleItems.find(
+			(r) =>
+				r.roleTemplateId === GA_TEMPLATE_ID ||
+				String(r.DisplayName ?? r.displayName ?? '').toLowerCase() === 'global administrator',
+		);
+		const gaMembers = Array.isArray(gaRole?.Members) ? (gaRole.Members as IDataObject[]) : [];
+		globalAdminCount = gaMembers.length;
+		globalAdminUpns = gaMembers
+			.map((m) => String(m.userPrincipalName ?? m.UserPrincipalName ?? ''))
 			.filter(Boolean);
 	}
 
