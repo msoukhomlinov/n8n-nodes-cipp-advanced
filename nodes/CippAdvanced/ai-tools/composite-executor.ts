@@ -596,9 +596,15 @@ async function becInvestigation(
 	}
 
 	const oauthApps = toArray(s3.data);
-	const suspiciousOAuthApps = oauthApps.filter(
-		(a) => a.riskLevel === 'high' || a.consentType === 'AllPrincipals',
-	);
+	const HIGH_RISK_SCOPES = new Set([
+		'Mail.ReadWrite', 'MailboxSettings.ReadWrite', 'Mail.Send',
+		'Contacts.ReadWrite', 'full_access_as_user', 'Calendars.ReadWrite',
+	]);
+	const suspiciousOAuthApps = oauthApps.filter((a) => {
+		if (a.riskLevel === 'high' || a.consentType === 'AllPrincipals') return true;
+		const perms = (a.permissions ?? a.Permissions ?? a.scopes ?? a.Scopes ?? []) as unknown[];
+		return Array.isArray(perms) && perms.some((p) => typeof p === 'string' && HIGH_RISK_SCOPES.has(p));
+	});
 
 	// Risk score: additive based on findings
 	let riskScore = 0;
