@@ -403,9 +403,9 @@ async function securityPosture(
 					return userScore === 0;
 				})
 				.sort((a, b) => {
-					const aPct = typeof a.scoreInPercentage === 'number' ? a.scoreInPercentage : 0;
-					const bPct = typeof b.scoreInPercentage === 'number' ? b.scoreInPercentage : 0;
-					return bPct - aPct;
+					const aMax = typeof a.maxScore === 'number' ? a.maxScore : 0;
+					const bMax = typeof b.maxScore === 'number' ? b.maxScore : 0;
+					return bMax - aMax;
 				})
 				.slice(0, 5)
 				.map((cs) => ({
@@ -474,6 +474,7 @@ async function securityPosture(
 
 	if (s13.ok) {
 		const roleItems = toArray(s13.data);
+		// NOTE: field names (displayName, memberUPN etc.) are best-guess — validate against live ListRoles response
 		const globalAdminItems = roleItems.filter((r) => {
 			const name = String(r.displayName ?? r.DisplayName ?? r.RoleName ?? r.roleName ?? '');
 			return name.toLowerCase() === 'global administrator';
