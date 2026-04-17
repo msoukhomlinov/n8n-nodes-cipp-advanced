@@ -36,7 +36,10 @@ export async function execute(
 	}
 
 	if (operation === 'listMailboxRules') {
-		return listWithSlice(context, i, 'GET', '/api/ListMailboxRules', {}, { tenantFilter });
+		const qs: IDataObject = { tenantFilter };
+		const useReportDb = context.getNodeParameter('useReportDb', i, false) as boolean;
+		if (!useReportDb) qs.UseReportDB = 'true';
+		return listWithSlice(context, i, 'GET', '/api/ListMailboxRules', {}, qs);
 	}
 
 	if (operation === 'listMobileDevices') {

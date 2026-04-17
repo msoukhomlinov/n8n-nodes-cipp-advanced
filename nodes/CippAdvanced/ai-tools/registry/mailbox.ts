@@ -42,8 +42,10 @@ export const resourceConfig: ResourceConfig = {
 			isWrite: false,
 			isList: true,
 			tenant: TENANT.qs,
-			params: {},
-			description: 'List mailbox rules',
+			params: {
+				UseReportDB: P.qs('Pass true to use cached CIPP Report DB results instead of a live Exchange Online pull. Omit or pass false for live data (recommended).'),
+			},
+			description: 'List inbox rules across all mailboxes in a tenant. By default performs a live Exchange Online pull. Set UseReportDB=true only if the CIPP scheduled reporting job has already run for this tenant.',
 		},
 		listMobileDevices: {
 			method: 'GET',

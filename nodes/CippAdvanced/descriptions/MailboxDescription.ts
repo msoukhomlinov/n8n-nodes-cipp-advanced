@@ -388,6 +388,21 @@ export const mailboxFields: INodeProperties[] = [
 		description: 'Filter results by a specific user (leave empty for all)',
 	},
 
+	// Use Report DB toggle for listMailboxRules
+	{
+		displayName: 'Use Report Database',
+		name: 'useReportDb',
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['mailbox'],
+				operation: ['listMailboxRules'],
+			},
+		},
+		default: false,
+		description: 'Whether to use the CIPP Report Database cache. When off (default), forces a live Exchange Online pull. Turn on only if the CIPP scheduled reporting job has run and you want cached results.',
+	},
+
 	// Mailbox filter for listMobileDevices
 	{
 		displayName: 'Mailbox (Filter)',

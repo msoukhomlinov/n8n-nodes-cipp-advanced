@@ -261,9 +261,11 @@ async function becInvestigation(
 	steps.push(s1);
 	failFast(s1, failMode);
 
-	// Step 2: Mailbox rules — tenant-wide (/api/ListMailboxRules); /api/ListUserMailboxRules
-	// requires UserID and returns empty without it, so use tenant-wide and filter client-side
-	const s2 = await apiStep(ctx, 'mailbox.listMailboxRules', 'GET', '/api/ListMailboxRules', { tenantFilter });
+	// Step 2: Mailbox rules — per-user when userId provided, tenant-wide (live pull) otherwise.
+	// /api/ListUserMailboxRules requires UserID; /api/ListMailboxRules needs UseReportDB=true for live data.
+	const s2 = userId
+		? await apiStep(ctx, 'user.listUserMailboxRules', 'GET', '/api/ListUserMailboxRules', { tenantFilter, UserID: userId })
+		: await apiStep(ctx, 'mailbox.listMailboxRules', 'GET', '/api/ListMailboxRules', { tenantFilter, UseReportDB: 'true' });
 	steps.push(s2);
 	failFast(s2, failMode);
 
