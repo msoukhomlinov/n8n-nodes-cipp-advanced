@@ -404,10 +404,10 @@ export const resourceConfig: ResourceConfig = {
 			isList: true,
 			tenant: TENANT.qs,
 			params: {
-				UserID: P.qs('User ID or UPN of the mailbox to retrieve rules for — required, endpoint returns nothing without this', true),
-				userEmail: P.qs('User email (alternative to UserID)'),
+				UserID: P.qs('Azure AD user identifier — GUID or UPN (user@domain.com). Filters rules to a specific mailbox.'),
+				userEmail: P.qs('Exchange email address. Use when the mailbox email differs from the Azure AD UPN.'),
 			},
-			description: 'List inbox rules for a specific user mailbox. UserID or userEmail is required — the endpoint returns nothing without a mailbox identifier.',
+			description: 'List inbox rules for a specific user mailbox. Optionally filter by UserID (Azure AD GUID or UPN) or userEmail (Exchange address).',
 		},
 		listUserSettings: {
 			method: 'GET',

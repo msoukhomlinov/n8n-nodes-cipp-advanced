@@ -1647,23 +1647,6 @@ export const userFields: INodeProperties[] = [
 		],
 	},
 
-	// ── List User Mailbox Rules — UserID required ──
-	{
-		displayName: 'User ID or UPN',
-		name: 'mailboxRulesUserId',
-		type: 'string',
-		required: true,
-		displayOptions: {
-			show: {
-				resource: [RESOURCE],
-				operation: ['listUserMailboxRules'],
-			},
-		},
-		default: '',
-		placeholder: 'user@domain.com or GUID',
-		description: 'User ID or UPN of the mailbox to retrieve rules for. Required — the endpoint returns nothing without this.',
-	},
-
 	// ── List User Mailbox Details extra filter ──
 	{
 		displayName: 'User Mail Filter',
@@ -1688,10 +1671,10 @@ export const userFields: INodeProperties[] = [
 		],
 	},
 
-	// ── List User Mailbox Rules extra filter ──
+	// ── List User Mailbox Rules filter ──
 	{
-		displayName: 'Email Filter',
-		name: 'mailboxRulesEmailFilter',
+		displayName: 'Options',
+		name: 'mailboxRulesFilter',
 		type: 'collection',
 		placeholder: 'Add Option',
 		default: {},
@@ -1703,11 +1686,20 @@ export const userFields: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'User ID or UPN',
+				name: 'userID',
+				type: 'string',
+				default: '',
+				placeholder: 'user@domain.com or GUID',
+				description: 'Azure AD user identifier — GUID or UPN (user@domain.com). Filters rules to a specific mailbox.',
+			},
+			{
 				displayName: 'User Email',
 				name: 'userEmail',
 				type: 'string',
 				default: '',
-				description: 'Filter by user email address',
+				placeholder: 'user@domain.com',
+				description: 'Exchange email address. Use when the mailbox email differs from the Azure AD UPN.',
 			},
 		],
 	},

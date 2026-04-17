@@ -243,6 +243,34 @@ export async function execute(
 		if (fields.vendorInformation) body.vendorInformation = fields.vendorInformation as string;
 		responseData = await cippApiRequest.call(context, 'POST', '/api/ExecUpdateSecureScore', body, {});
 
+	} else if (operation === 'getSecureScore') {
+		// GET /api/ListGraphRequest → security/secureScores
+		const opts = context.getNodeParameter('secureScoreOptions', i, {}) as IDataObject;
+		const historyCount = (opts.historyCount as number) ?? 1;
+		const includeControlProfiles = (opts.includeControlProfiles as boolean) ?? false;
+
+		const tenantFilter = getTenantFilter(context, i);
+		const qs: IDataObject = {
+			tenantFilter,
+			Endpoint: 'security/secureScores',
+			graphFilter: `$top=${historyCount}`,
+		};
+		const scoreData = await cippApiRequest.call(context, 'GET', '/api/ListGraphRequest', {}, qs);
+
+		if (!includeControlProfiles) {
+			responseData = scoreData;
+		} else {
+			const profileQs: IDataObject = {
+				tenantFilter,
+				Endpoint: 'security/secureScoreControlProfiles',
+			};
+			const profileData = await cippApiRequest.call(context, 'GET', '/api/ListGraphRequest', {}, profileQs);
+			responseData = {
+				scores: Array.isArray(scoreData) ? scoreData : [scoreData],
+				controlProfiles: Array.isArray(profileData) ? profileData : [profileData],
+			};
+		}
+
 	} else if (operation === 'listAppConsentRequests') {
 		// GET /api/ListAppConsentRequests — standard tenantFilter QS
 		const qs: IDataObject = { tenantFilter: getTenantFilter(context, i) };
