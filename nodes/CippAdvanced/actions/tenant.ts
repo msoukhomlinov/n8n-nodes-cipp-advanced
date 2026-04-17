@@ -253,7 +253,7 @@ export async function execute(
 		const qs: IDataObject = {
 			tenantFilter,
 			Endpoint: 'security/secureScores',
-			graphFilter: `$top=${historyCount}`,
+			'$top': historyCount,
 		};
 		const scoreData = await cippApiRequest.call(context, 'GET', '/api/ListGraphRequest', {}, qs);
 

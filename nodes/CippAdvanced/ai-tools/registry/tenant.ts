@@ -165,14 +165,14 @@ export const resourceConfig: ResourceConfig = {
 			isWrite: false,
 			isList: true,
 			tenant: TENANT.qs,
-			defaults: { qs: { Endpoint: 'security/secureScores', graphFilter: '$top=1' } },
+			defaults: { qs: { Endpoint: 'security/secureScores', '$top': 1 } },
 			params: {
-				graphFilter: P.qs('OData filter string, e.g. "$top=5" for 5 historical scores. Default: "$top=1" (latest only)'),
+				'$top': P.qs('Number of historical score entries to return. Default: 1 (latest only)'),
 			},
 			description: 'Get Microsoft Secure Score for a tenant. Returns currentScore, maxScore, ' +
 				'enabledServices, activeUserCount, and controlScores[] with per-control details. ' +
 				'Requires SecurityEvents.Read.All on the SAM app. ' +
-				'Use graphFilter="$top=N" to retrieve N historical score entries.',
+				'Use $top=N to retrieve N historical score entries.',
 		},
 		getSecureScoreControlProfiles: {
 			method: 'GET',

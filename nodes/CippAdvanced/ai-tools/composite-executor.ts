@@ -219,7 +219,7 @@ async function securityPosture(
 	const s9 = await apiStep(ctx, 'security.secureScore', 'GET', '/api/ListGraphRequest', {
 		tenantFilter,
 		Endpoint: 'security/secureScores',
-		graphFilter: '$top=1',
+		'$top': 1,
 	});
 	steps.push(s9);
 

@@ -2,6 +2,12 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.2.3] - 2026-04-18
+
+### Fixed
+
+- **Tenant: Get Secure Score — 400 error on all tenants** — `graphFilter: '$top=N'` was being passed to CIPP's `ListGraphRequest`, which maps `graphFilter` to Graph's OData `$filter` parameter. `$top=N` is not valid `$filter` syntax; Microsoft Graph returned 400 Bad Request for every tenant. Fixed by passing `'$top': historyCount` as a direct OData query parameter (same pattern used by `user.getAll`). Also fixed the AI Tools registry default and exposed `$top` as the user-facing param instead of `graphFilter`. **GDAP note:** this endpoint also requires the **Security Reader** role in your GDAP relationship and `SecurityEvents.Read.All` application permission on the CIPP SAM app
+
 ## [1.2.2] - 2026-04-17
 
 ### Fixed
