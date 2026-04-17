@@ -70,6 +70,20 @@ function failFast(step: StepResult, failMode: 'fast' | 'bestEffort'): void {
 	}
 }
 
+const SMTP_ADDRESS_PATTERN = /SMTP:([^\]]+)/i;
+
+// Each CIPP address entry format: `"email@domain.com" [SMTP:email@domain.com]`
+function extractEmails(addrs: unknown): string[] {
+	if (!Array.isArray(addrs)) return [];
+	const results: string[] = [];
+	for (const addr of addrs) {
+		if (typeof addr !== 'string') continue;
+		const email = SMTP_ADDRESS_PATTERN.exec(addr)?.[1]?.trim();
+		if (email) results.push(email);
+	}
+	return results;
+}
+
 // ── Composite implementations ────────────────────────────────────────
 
 async function licenseAudit(
@@ -158,87 +172,259 @@ async function securityPosture(
 ): Promise<CompositeResult> {
 	const steps: StepResult[] = [];
 
-	// Step 1: MFA status for all users
+	// s1–s3: critical — respect failMode
 	const s1 = await apiStep(ctx, 'user.listMfaUsers', 'GET', '/api/ListMFAUsers', { tenantFilter });
 	steps.push(s1);
 	failFast(s1, failMode);
 
-	// Step 2: Basic auth usage
 	const s2 = await apiStep(ctx, 'identity.listBasicAuth', 'GET', '/api/ListBasicAuth', { tenantFilter });
 	steps.push(s2);
 	failFast(s2, failMode);
 
-	// Step 3: Conditional access policies
 	const s3 = await apiStep(ctx, 'conditionalAccess.listPolicies', 'GET', '/api/ListConditionalAccessPolicies', { tenantFilter });
 	steps.push(s3);
 	failFast(s3, failMode);
 
-	// Step 4: Defender state
+	// s4–s8: best-effort — failFast NOT called; errors captured in steps[].error
 	const s4 = await apiStep(ctx, 'tenant.listDefenderState', 'GET', '/api/ListDefenderState', { tenantFilter });
 	steps.push(s4);
+	const s5 = await apiStep(ctx, 'tenant.listAntiPhishingFilters', 'GET', '/api/ListAntiPhishingFilters', { tenantFilter });
+	steps.push(s5);
+	const s6 = await apiStep(ctx, 'tenant.listSafeAttachmentsFilters', 'GET', '/api/ListSafeAttachmentsFilters', { tenantFilter });
+	steps.push(s6);
+	const s7 = await apiStep(ctx, 'safeLinks.listSafeLinksPolicy', 'GET', '/api/ListSafeLinksPolicy', { tenantFilter });
+	steps.push(s7);
+	const s8 = await apiStep(ctx, 'tenant.listDomainAnalyser', 'GET', '/api/ListDomainAnalyser', { tenantFilter });
+	steps.push(s8);
 
-	// MFA analysis — CIPP ListMFAUsers fields: MFARegistration (bool), PerUser (string),
-	// IsAdmin (bool), UPN (string), CoveredByCA (string)
-	const mfaUsers = toArray(s1.data);
-	const usersWithoutMfa = mfaUsers
-		.filter((u) => !u.MFARegistration)
+	// ── Identity: MFA ────────────────────────────────────────────────
+	// Filter to active non-guest users so disabled/guest accounts don't skew coverage %
+	const allMfaUsers = toArray(s1.data);
+	const mfaUsers = allMfaUsers.filter(
+		(u) => u.AccountEnabled !== false && u.UserType !== 'Guest',
+	);
+	const usersEvaluated = mfaUsers.length;
+	const allWithoutMfa = mfaUsers.filter((u) => !u.MFARegistration);
+	const usersWithoutMfaTotal = allWithoutMfa.length;
+	const usersWithoutMfa = allWithoutMfa
+		.slice(0, 25)
 		.map((u) => (u.UPN ?? u.DisplayName) as string)
 		.filter(Boolean);
 	const adminGaps = mfaUsers
 		.filter((u) => u.IsAdmin === true && !u.MFARegistration)
 		.map((u) => (u.UPN ?? u.DisplayName) as string)
 		.filter(Boolean);
-	const coveredPct =
-		mfaUsers.length > 0
-			? Math.round(((mfaUsers.length - usersWithoutMfa.length) / mfaUsers.length) * 100)
+	const mfaCoveredPct =
+		usersEvaluated > 0
+			? Math.round(((usersEvaluated - usersWithoutMfaTotal) / usersEvaluated) * 100)
 			: 100;
 
-	// Basic auth
+	// ── Identity: Basic Auth ─────────────────────────────────────────
 	const basicAuthItems = toArray(s2.data);
 	const basicAuthEnabled = basicAuthItems.length > 0;
+	// Protocol field name varies by CIPP version — try known variants
+	const basicAuthProtocols = basicAuthEnabled
+		? basicAuthItems
+			.map((item) => (item.AuthProtocol ?? item.Protocol ?? item.ClientProtocol ?? item.authProtocol) as string | undefined)
+			.filter((p): p is string => typeof p === 'string' && p.length > 0)
+		: [];
 
-	// CA policies — detect MFA grant and legacy-auth block
-	const caPolicies = toArray(s3.data);
-	const requireMfa = caPolicies.some((p) => {
-		const controls = p.grantControls as IDataObject | undefined;
-		const builtIn = controls?.builtInControls as string[] | undefined;
+	// ── Access: Conditional Access ───────────────────────────────────
+	const allCaPolicies = toArray(s3.data);
+	const caPoliciesCount = allCaPolicies.length;
+	// Only ENABLED policies affect posture — report-only and disabled do not
+	const enabledCaPolicies = allCaPolicies.filter((p) => p.state === 'enabled');
+	const caPoliciesEnabledCount = enabledCaPolicies.length;
+	const caPoliciesReportOnlyCount = allCaPolicies.filter(
+		(p) => p.state === 'enabledForReportingButNotEnforced',
+	).length;
+
+	const hasMfaRequirementPolicy = enabledCaPolicies.some((p) => {
+		const builtIn = (p.grantControls as IDataObject | undefined)?.builtInControls as string[] | undefined;
 		return Array.isArray(builtIn) && builtIn.includes('mfa');
 	});
-	const blockLegacyAuth = caPolicies.some((p) => {
-		const conditions = p.conditions as IDataObject | undefined;
-		const clientAppTypes = (conditions?.clientAppTypes as string[]) ?? [];
-		const targetsLegacy = clientAppTypes.includes('exchangeActiveSync') || clientAppTypes.includes('other');
-		const controls = p.grantControls as IDataObject | undefined;
-		const builtIn = controls?.builtInControls as string[] | undefined;
-		const blocks = Array.isArray(builtIn) && builtIn.includes('block');
-		return targetsLegacy && blocks;
+
+	const hasLegacyAuthBlockPolicy = enabledCaPolicies.some((p) => {
+		const clientAppTypes = ((p.conditions as IDataObject | undefined)?.clientAppTypes as string[] | undefined) ?? [];
+		// Empty clientAppTypes = "all apps" = covers legacy auth
+		const targetsLegacy =
+			clientAppTypes.length === 0 ||
+			clientAppTypes.includes('exchangeActiveSync') ||
+			clientAppTypes.includes('other');
+		const builtIn = (p.grantControls as IDataObject | undefined)?.builtInControls as string[] | undefined;
+		return targetsLegacy && Array.isArray(builtIn) && builtIn.includes('block');
 	});
 
-	// Defender state
-	const defenderItems = toArray(s4.data);
-	const defenderEnabled = defenderItems.some(
-		(d) => d.status === 'Active' || d.onboardingStatus === 'Onboarded',
-	);
+	// ── Endpoint: Defender ───────────────────────────────────────────
+	let defenderStatus: 'Active' | 'PartiallyActive' | 'Inactive' | 'Unknown';
+	let defenderOnboardedPct = 0;
+	let defenderOnboardedCount = 0;
+	let defenderDeviceCount = 0;
 
-	// Score: base 100 with deductions
-	let score = 100;
-	score -= Math.min(40, usersWithoutMfa.length * 5);
-	if (basicAuthEnabled) score -= 20;
-	if (!requireMfa) score -= 15;
-	if (!blockLegacyAuth) score -= 10;
-	if (!defenderEnabled) score -= 15;
-	score = Math.max(0, score);
+	if (!s4.ok) {
+		defenderStatus = 'Unknown';
+	} else {
+		const defenderItems = toArray(s4.data);
+		defenderDeviceCount = defenderItems.length;
+		defenderOnboardedCount = defenderItems.filter(
+			(d) => d.status === 'Active' || d.onboardingStatus === 'Onboarded',
+		).length;
+		defenderOnboardedPct =
+			defenderDeviceCount === 0
+				? 0
+				: Math.round((defenderOnboardedCount / defenderDeviceCount) * 100);
+		if (defenderDeviceCount === 0) {
+			defenderStatus = 'Inactive';
+		} else if (defenderOnboardedPct >= 95) {
+			defenderStatus = 'Active';
+		} else {
+			defenderStatus = 'PartiallyActive';
+		}
+	}
+
+	// ── Email: Policies ──────────────────────────────────────────────
+	// Treat absent Enabled field as enabled (field name varies; absence ≠ disabled)
+	const isPolicyEnabled = (p: IDataObject): boolean =>
+		p.Enabled !== false && p.IsEnabled !== false && p.enabled !== false;
+
+	const hasAntiPhishingPolicy = s5.ok && toArray(s5.data).some(isPolicyEnabled);
+	const hasSafeAttachments = s6.ok && toArray(s6.data).some(isPolicyEnabled);
+	const hasSafeLinks = s7.ok && toArray(s7.data).some(isPolicyEnabled);
+
+	// ── Email/DNS: Domain Analyser ───────────────────────────────────
+	let domainsTotal = 0;
+	let domainsWithDmarc = 0;
+	let domainsWithDkim = 0;
+	let domainsWithSpfHardFail = 0;
+
+	if (s8.ok) {
+		const domains = toArray(s8.data);
+		domainsTotal = domains.length;
+		for (const d of domains) {
+			// Field names not confirmed in OpenAPI — try both cases
+			const dmarcRecord = String(d.DMARC ?? d.dmarc ?? '');
+			if (/p=(quarantine|reject)/i.test(dmarcRecord)) domainsWithDmarc++;
+			const dkimRecord = String(d.DKIM ?? d.dkim ?? '');
+			if (dkimRecord && dkimRecord !== 'None' && dkimRecord !== 'false' && dkimRecord !== '') domainsWithDkim++;
+			const spfRecord = String(d.SPF ?? d.spf ?? '');
+			if (/-all/i.test(spfRecord)) domainsWithSpfHardFail++;
+		}
+	}
+
+	// ── Gap Rules ────────────────────────────────────────────────────
+	const gaps: string[] = [];
+
+	// Identity
+	if (s1.ok && usersEvaluated === 0) {
+		gaps.push('No active users found — tenant may be empty or MFA data unavailable');
+	} else if (s1.ok) {
+		if (adminGaps.length > 0) {
+			gaps.push(`${adminGaps.length} admin(s) without MFA: ${adminGaps.join(', ')}`);
+		}
+		if (usersWithoutMfaTotal > 0) {
+			gaps.push(
+				`${usersWithoutMfaTotal} user(s) without MFA registered` +
+				(usersWithoutMfaTotal > 25 ? ' (showing first 25 UPNs)' : ''),
+			);
+		}
+	}
+	if (basicAuthEnabled) {
+		const protoStr = basicAuthProtocols.length > 0
+			? `protocols: ${basicAuthProtocols.join(', ')}`
+			: 'see step data for protocol details';
+		gaps.push(`Basic authentication enabled (${protoStr})`);
+	}
+
+	// Access
+	if (caPoliciesCount === 0) {
+		gaps.push('No Conditional Access policies found');
+	} else {
+		if (!hasMfaRequirementPolicy) {
+			const reportNote = caPoliciesReportOnlyCount > 0
+				? ` (${caPoliciesReportOnlyCount} report-only policy/policies exist — enforce to activate)`
+				: '';
+			gaps.push(`No enabled Conditional Access policy requiring MFA found${reportNote}`);
+		}
+		if (!hasLegacyAuthBlockPolicy) {
+			gaps.push('No enabled Conditional Access policy blocking legacy authentication found');
+		}
+	}
+
+	// Endpoint
+	if (defenderStatus === 'PartiallyActive') {
+		gaps.push(
+			`Microsoft Defender partially deployed: ${defenderOnboardedCount}/${defenderDeviceCount} devices onboarded (${defenderOnboardedPct}%)`,
+		);
+	} else if (defenderStatus === 'Inactive') {
+		gaps.push('Microsoft Defender not deployed (no managed devices found)');
+	} else if (defenderStatus === 'Unknown') {
+		gaps.push('Defender status unavailable (step failed)');
+	}
+
+	// Email — roll up to one gap if all three steps failed
+	const emailStepsFailed = !s5.ok && !s6.ok && !s7.ok;
+	if (emailStepsFailed) {
+		gaps.push(
+			'Email protection posture unavailable (anti-phishing, Safe Attachments, Safe Links steps all failed — verify Exchange Online admin permissions)',
+		);
+	} else {
+		if (!hasAntiPhishingPolicy) gaps.push('No anti-phishing policy configured');
+		if (!hasSafeAttachments) gaps.push('No Safe Attachments policy configured (requires Defender for Office 365)');
+		if (!hasSafeLinks) gaps.push('No Safe Links policy configured (requires Defender for Office 365)');
+	}
+
+	// DNS — only emit domain gaps when analyser returned data
+	if (s8.ok && domainsTotal > 0) {
+		if (domainsWithDmarc < domainsTotal) {
+			gaps.push(`${domainsTotal - domainsWithDmarc} domain(s) without enforced DMARC policy`);
+		}
+		if (domainsWithDkim < domainsTotal) {
+			gaps.push(`${domainsTotal - domainsWithDkim} domain(s) without DKIM configured`);
+		}
+		if (domainsWithSpfHardFail < domainsTotal) {
+			gaps.push(`${domainsTotal - domainsWithSpfHardFail} domain(s) without SPF hard-fail (-all)`);
+		}
+	}
 
 	return {
 		composite: 'securityPosture',
 		tenantFilter,
 		steps,
 		result: {
-			score,
-			mfa: { coveredPct, usersWithoutMfa, adminGaps },
-			basicAuth: { enabled: basicAuthEnabled, usersAffected: basicAuthItems.length },
-			caPolicies: { count: caPolicies.length, requireMfa, blockLegacyAuth },
-			defender: { status: defenderEnabled ? 'Active' : 'Inactive' },
+			indicators: {
+				identity: {
+					mfaCoveredPct,
+					usersEvaluated,
+					usersWithoutMfa,
+					usersWithoutMfaTotal,
+					adminGaps,
+					basicAuthEnabled,
+					basicAuthProtocols,
+				},
+				access: {
+					caPoliciesCount,
+					caPoliciesEnabledCount,
+					caPoliciesReportOnlyCount,
+					hasMfaRequirementPolicy,
+					hasLegacyAuthBlockPolicy,
+				},
+				endpoint: {
+					defenderStatus,
+					defenderOnboardedPct,
+					defenderOnboardedCount,
+					defenderDeviceCount,
+				},
+				email: {
+					hasAntiPhishingPolicy,
+					hasSafeAttachments,
+					hasSafeLinks,
+					domainsTotal,
+					domainsWithDmarc,
+					domainsWithDkim,
+					domainsWithSpfHardFail,
+				},
+			},
+			gaps,
 		},
 	};
 }
@@ -297,10 +483,55 @@ async function becInvestigation(
 	});
 
 	const mailboxRules = toArray(s2.data);
-	const externalForwardingRules = mailboxRules.filter((r) => {
-		const actions = r.Actions as IDataObject | undefined;
-		return Boolean(actions?.ForwardTo || actions?.ForwardAsAttachmentTo || actions?.RedirectTo);
-	});
+	// Only consider enabled rules; ForwardTo/ForwardAsAttachmentTo/RedirectTo are top-level fields
+	// (not nested under r.Actions). A field is active when it is a non-empty array.
+	const forwardingTypes = ['ForwardTo', 'ForwardAsAttachmentTo', 'RedirectTo'] as const;
+	type ForwardingType = (typeof forwardingTypes)[number];
+
+	type ShapedForwardingRule = {
+		name: unknown;
+		enabled: unknown;
+		mailboxOwner: unknown;
+		forwardingTypes: ForwardingType[];
+		externalTargets: string[];
+	};
+
+	const externalForwardingRules: ShapedForwardingRule[] = [];
+	// tenantFilter must be a primary SMTP domain (not a GUID) for external-domain filtering to be meaningful.
+	const tenantDomain =
+		typeof tenantFilter === 'string' && tenantFilter.includes('.')
+			? tenantFilter.toLowerCase()
+			: '';
+
+	for (const r of mailboxRules) {
+		if (r.Enabled === false) continue;
+
+		const allExternalTargets: string[] = [];
+		const activeTypes: ForwardingType[] = [];
+
+		for (const fwdType of forwardingTypes) {
+			const addrs = r[fwdType];
+			if (!Array.isArray(addrs) || addrs.length === 0) continue;
+			const emails = extractEmails(addrs);
+			const external = tenantDomain
+				? emails.filter((e) => !e.toLowerCase().endsWith('@' + tenantDomain))
+				: emails;
+			if (external.length > 0) {
+				allExternalTargets.push(...external);
+				activeTypes.push(fwdType);
+			}
+		}
+
+		if (allExternalTargets.length > 0) {
+			externalForwardingRules.push({
+				name: r.Name,
+				enabled: r.Enabled,
+				mailboxOwner: r.UserPrincipalName ?? r.MailboxOwnerId,
+				forwardingTypes: activeTypes,
+				externalTargets: allExternalTargets,
+			});
+		}
+	}
 
 	const oauthApps = toArray(s3.data);
 	const suspiciousOAuthApps = oauthApps.filter(
