@@ -159,6 +159,21 @@ export const resourceConfig: ResourceConfig = {
 			},
 			description: 'Update secure score for a tenant',
 		},
+		getSecureScore: {
+			method: 'GET',
+			endpoint: '/api/ListGraphRequest',
+			isWrite: false,
+			isList: true,
+			tenant: TENANT.qs,
+			defaults: { qs: { Endpoint: 'security/secureScores', graphFilter: '$top=1' } },
+			params: {
+				graphFilter: P.qs('OData filter string, e.g. "$top=5" for 5 historical scores. Default: "$top=1" (latest only)'),
+			},
+			description: 'Get Microsoft Secure Score for a tenant. Returns currentScore, maxScore, ' +
+				'enabledServices, activeUserCount, and controlScores[] with per-control details. ' +
+				'Requires SecurityEvents.Read.All on the SAM app. ' +
+				'Use graphFilter="$top=N" to retrieve N historical score entries.',
+		},
 		listAppConsentRequests: {
 			method: 'GET',
 			endpoint: '/api/ListAppConsentRequests',
