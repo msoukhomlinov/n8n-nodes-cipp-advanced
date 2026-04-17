@@ -37,11 +37,19 @@ const securityPosture: CompositeOperationDef = {
 		),
 	},
 	description:
-		'SECURITY POSTURE — runs MFA coverage, basic auth, conditional access, and Defender checks ' +
-		'and returns a score (0–100) with deductions: MFA gaps (–5/user, max –40), basicAuth enabled (–20), ' +
-		'no MFA CA policy (–15), no legacy-auth block (–10), Defender inactive (–15). ' +
-		'Returns: score, mfa { coveredPct, usersWithoutMfa, adminGaps }, basicAuth { enabled, usersAffected }, ' +
-		'caPolicies { count, requireMfa, blockLegacyAuth }, defender { status }.',
+		'SECURITY POSTURE — runs 8 CIPP checks and returns observable indicators plus a ' +
+		'gaps[] array of plain-English findings (empty array on clean tenants, no numeric score). ' +
+		'Returns: indicators { identity { mfaCoveredPct, usersEvaluated, usersWithoutMfa[], ' +
+		'usersWithoutMfaTotal, adminGaps[], basicAuthEnabled, basicAuthProtocols[] }, ' +
+		'access { caPoliciesCount, caPoliciesEnabledCount, caPoliciesReportOnlyCount, ' +
+		'hasMfaRequirementPolicy, hasLegacyAuthBlockPolicy }, ' +
+		'endpoint { defenderStatus ("Active"|"PartiallyActive"|"Inactive"|"Unknown"), ' +
+		'defenderOnboardedPct, defenderOnboardedCount, defenderDeviceCount }, ' +
+		'email { hasAntiPhishingPolicy, hasSafeAttachments, hasSafeLinks, ' +
+		'domainsTotal, domainsWithDmarc, domainsWithDkim, domainsWithSpfHardFail } }, ' +
+		'gaps[], steps[]. ' +
+		'NOTE: Safe Attachments/Safe Links gaps are expected on tenants without Defender for Office 365 licensing. ' +
+		'Domain health gaps are skipped if domain analyser has not been run for the tenant.',
 };
 
 const becInvestigation: CompositeOperationDef = {
