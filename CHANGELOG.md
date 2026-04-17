@@ -2,6 +2,47 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.1.6] - 2026-04-17
+
+### Added
+
+- **Workflows resource** — new 29th resource exposing 5 multi-step composite operations across both standard node and AI Tools node:
+  - **License Audit** — combines license inventory, disabled/inactive users with licenses, and unused SKUs into a cost-saving report with seat waste and estimated monthly saving
+  - **Security Posture** — scores tenant security (0–100) across MFA coverage, basic auth, conditional access policies, and Defender status
+  - **BEC Investigation** — pulls sign-ins, mailbox forwarding rules, suspicious OAuth apps, and optional per-user BEC check; returns risk score and suspicious activity lists
+  - **User 360** — aggregates user profile, group memberships, devices, mailbox details, MFA status, and last 10 sign-ins into a single snapshot
+  - **Cross-Tenant Sweep** — runs licenseAudit, securityPosture, or becInvestigation across all managed tenants (up to 50, default 20)
+- All composite operations support `failMode`: `bestEffort` (continue on step failures, return partial results) or `fast` (stop on first failure)
+
+### Fixed
+
+- **List Mailbox Rules** — defaulted to CIPP Report DB (cached, stale). Now fetches live Exchange Online data by default (`UseReportDB=true`). Toggle available in UI to opt into Report DB
+- **List User Mailbox Rules** — endpoint requires `UserID`/`userEmail` but parameter was buried in an optional filters collection, so API silently returned nothing. Added top-level required `User ID or UPN` field
+- **BEC Investigation composite** — smart routing: uses `ListUserMailboxRules` (targeted) when `userId` provided, falls back to tenant-wide `ListMailboxRules` with live pull otherwise
+- **MFA field names** — corrected to match live API response: `MFARegistration` (bool), `PerUser` (string), `IsAdmin` (bool), `UPN` (string), `CoveredByCA` (string)
+- **Duplicate User ID field** — removed `listUserMailboxRules` from the shared `userListFilters` collection display options; dedicated top-level field is now the sole User ID input for that operation
+
+## [1.1.7] - 2026-04-17
+
+### Fixed
+
+- **BEC external forwarding rule detection** — fixed field lookup (`ForwardTo`/`ForwardAsAttachmentTo`/`RedirectTo` are top-level on the rule object, not nested under `Actions`); now correctly parses SMTP addresses from CIPP format strings (`"email@domain.com" [SMTP:email@domain.com]`); filters to external targets only; accumulates all three forwarding types per rule (no longer drops secondary types via early `break`); GUID tenantFilter no longer causes silent false-positives on external-domain check
+
+## [1.1.8] - 2026-04-17
+
+### Changed
+
+- **Security Posture composite** — complete redesign for factual accuracy:
+  - **BREAKING:** `result.score` removed. Read `result.gaps[]` for actionable findings and `result.indicators.*` for raw signals
+  - `crossTenantSweep` consumers reading `results[tenant].result.score` are also affected — read `result.indicators` instead
+  - Expanded from 4 to 8 API steps: anti-phishing, Safe Attachments, Safe Links, domain health (DMARC/DKIM/SPF) added
+  - Conditional Access policy state filter added — disabled/report-only policies no longer counted as active controls
+  - Defender status now threshold-based (`Active` ≥95% devices, `PartiallyActive` 1–94%, `Inactive` no devices) instead of any-device boolean
+  - MFA coverage denominator now excludes disabled and guest accounts
+  - `usersWithoutMfa[]` capped at 25 UPNs; `usersWithoutMfaTotal` added for true count
+  - `basicAuthProtocols[]` replaces misleading `basicAuthUsersAffected` count
+  - `gaps[]` plain-English findings array added (empty = clean tenant)
+
 ## [1.1.5] - 2026-04-02
 
 ### Fixed
