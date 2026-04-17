@@ -229,6 +229,12 @@ export const tenantOperations: INodeProperties[] = [
 				description: 'Update secure score control resolution for a tenant',
 				action: 'Update secure score',
 			},
+			{
+				name: 'Get Secure Score',
+				value: 'getSecureScore',
+				description: 'Retrieve Microsoft Secure Score data for a tenant',
+				action: 'Get secure score',
+			},
 		],
 		default: 'getAll',
 	},
@@ -238,7 +244,7 @@ export const tenantFields: INodeProperties[] = [
 	// ── Tenant selector for tenant-specific operations ──
 	tenantField('tenant', [
 		'getLicenses', 'getCspLicenses', 'cspLicenseAction', 'listDefenderState', 'listCspSkus',
-		'getDetails', 'updateSecureScore', 'listAppConsentRequests', 'setAuthMethod',
+		'getDetails', 'updateSecureScore', 'getSecureScore', 'listAppConsentRequests', 'setAuthMethod',
 		'listOAuthApps', 'listServiceHealth',
 		'listDomains', 'addDomain', 'removeDomain',
 		'excludeTenant', 'listTenantAllowBlockList', 'removeTenantAllowBlockList',
@@ -734,6 +740,38 @@ export const tenantFields: INodeProperties[] = [
 				type: 'string',
 				default: '',
 				description: 'Vendor information for the resolution',
+			},
+		],
+	},
+
+	// ── Get Secure Score ──
+	{
+		displayName: 'Options',
+		name: 'secureScoreOptions',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['tenant'],
+				operation: ['getSecureScore'],
+			},
+		},
+		options: [
+			{
+				displayName: 'History Count',
+				name: 'historyCount',
+				type: 'number',
+				default: 1,
+				description: 'Number of historical score entries to return (1 = latest only)',
+				typeOptions: { minValue: 1, maxValue: 100 },
+			},
+			{
+				displayName: 'Include Control Profiles',
+				name: 'includeControlProfiles',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to also fetch control profile metadata (security/secureScoreControlProfiles)',
 			},
 		],
 	},
