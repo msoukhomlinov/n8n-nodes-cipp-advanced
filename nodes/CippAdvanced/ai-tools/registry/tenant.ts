@@ -174,6 +174,19 @@ export const resourceConfig: ResourceConfig = {
 				'Requires SecurityEvents.Read.All on the SAM app. ' +
 				'Use graphFilter="$top=N" to retrieve N historical score entries.',
 		},
+		getSecureScoreControlProfiles: {
+			method: 'GET',
+			endpoint: '/api/ListGraphRequest',
+			isWrite: false,
+			isList: true,
+			tenant: TENANT.qs,
+			defaults: { qs: { Endpoint: 'security/secureScoreControlProfiles' } },
+			params: {},
+			description: 'Get Microsoft Secure Score control profiles for a tenant. Returns metadata for all ' +
+				'available Secure Score controls: id, title, maxScore, category, remediation, and implementationCost. ' +
+				'Use alongside getSecureScore to get the full picture of a tenant\'s security posture. ' +
+				'Requires SecurityEvents.Read.All on the SAM app.',
+		},
 		listAppConsentRequests: {
 			method: 'GET',
 			endpoint: '/api/ListAppConsentRequests',

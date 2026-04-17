@@ -246,7 +246,7 @@ export async function execute(
 	} else if (operation === 'getSecureScore') {
 		// GET /api/ListGraphRequest → security/secureScores
 		const opts = context.getNodeParameter('secureScoreOptions', i, {}) as IDataObject;
-		const historyCount = (opts.historyCount as number) ?? 1;
+		const historyCount = Math.max(1, (opts.historyCount as number) ?? 1);
 		const includeControlProfiles = (opts.includeControlProfiles as boolean) ?? false;
 
 		const tenantFilter = getTenantFilter(context, i);
