@@ -2,6 +2,17 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.1.9] - 2026-04-17
+
+### Added
+
+- **BEC Investigation** — added `GET /api/ListMailboxForwarding` as best-effort step `s2b`; detects SMTP-level forwarding (`ForwardingSmtpAddress` set via `Set-Mailbox`) which is invisible to inbox rule inspection; results in new `smtpForwardingRules[]` field and included in `riskScore`
+- **BEC Investigation** — added `knownLimitations[]` field documenting that hidden EXO inbox rules (created with `-Hidden` flag) are not accessible via CIPP API or Graph and require `Get-InboxRule -IncludeHidden` in EXO PowerShell
+- **Security Posture** — added Microsoft Secure Score via `GET /api/ListGraphRequest?Endpoint=security/secureScores`; returns `secureScore: { currentScore, maxScore, pct }` in result (`null` if step fails or `SecurityEvents.Read.All` not granted on SAM app)
+- **BEC Investigation** — extended OAuth app suspicious filter to flag apps with high-risk mail/calendar scopes (`Mail.ReadWrite`, `MailboxSettings.ReadWrite`, `Mail.Send`, `Contacts.ReadWrite`, `full_access_as_user`, `Calendars.ReadWrite`) regardless of consent type
+- **BEC Investigation** — added Identity Protection risky users via `GET /api/ListGraphRequest?Endpoint=identityProtection/riskyUsers` (best-effort step s5; requires AAD P1/P2); returns `riskyUsers[]` and `riskyUsersCount`; contributes to `riskScore`
+- **BEC Investigation** — added MDO alert detection via `GET /api/ExecMdoAlertsList` (best-effort step s6; requires Defender for Office 365); filters to BEC/phishing-relevant signals; returns `mdoAlerts[]` (max 10) and `mdoAlertsCount`
+
 ## [1.1.6] - 2026-04-17
 
 ### Added
