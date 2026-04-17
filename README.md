@@ -8,11 +8,11 @@ Advanced n8n community node for [CIPP.app](https://cipp.app) — comprehensive M
 ![CIPP Node](https://img.shields.io/badge/n8n-Community%20Node-ff6d5a)
 ![npm](https://img.shields.io/npm/v/n8n-nodes-cipp-advanced?label=latest&color=brightgreen)
 
-> **Acknowledgement:** This project builds on the foundation of [`@joshuanode/n8n-nodes-cipp`](https://github.com/ajoshuasmith/n8n-nodes-cipp) by [Joshua Smith](https://github.com/ajoshuasmith). The codebase was substantially rewritten with a modularised architecture, full API alignment audit against the CIPP OpenAPI spec, and expanded to **473 operations** across **28 resources** (~89% of the CIPP API surface).
+> **Acknowledgement:** This project builds on the foundation of [`@joshuanode/n8n-nodes-cipp`](https://github.com/ajoshuasmith/n8n-nodes-cipp) by [Joshua Smith](https://github.com/ajoshuasmith). The codebase was substantially rewritten with a modularised architecture, full API alignment audit against the CIPP OpenAPI spec, and expanded to **476 operations** across **29 resources** (~89% of the CIPP API surface).
 
 ## Features
 
-**473 operations** across 28 resources covering:
+**476 operations** across 29 resources covering:
 
 - **Identity Management** — Users (51 ops), Groups (11), Contacts (11), Identity (9)
 - **Email & Exchange** — Mailbox (46), Transport rules (20), Spam filters (18), Safe Links (12), Exchange Resources (9), Quarantine (4)
@@ -22,6 +22,7 @@ Advanced n8n community node for [CIPP.app](https://cipp.app) — comprehensive M
 - **Apps** — Applications (24)
 - **Teams & SharePoint** — Teams (12), Teams Shifts (28), Voice (4)
 - **CIPP Platform** — Tools (11), CIPP Admin (24), CIPP Core (14), Scheduled Items (5), Backups (4), OneDrive (2)
+- **AI Composite Operations** — Workflows (3 ops: security posture, BEC investigation, license audit + cross-tenant sweep)
 
 ### User-Friendly Design
 
@@ -30,6 +31,7 @@ Advanced n8n community node for [CIPP.app](https://cipp.app) — comprehensive M
 - **Field Picker** — Multi-select for user properties (no need to memorise Graph API field names)
 - **Smart Defaults** — Sensible default selections to keep responses fast and small
 - **AI Agent Compatible** — Works as a tool in n8n AI agent workflows (`usableAsTool`)
+- **Composite Operations** — Multi-step CIPP workflows for AI agents and MSP automation: security posture (8-signal indicator scan + `gaps[]`), BEC investigation (sign-ins, forwarding rules, OAuth apps), license audit, and cross-tenant sweep
 
 ## Installation
 
@@ -91,6 +93,7 @@ For detailed authentication setup, see the [CIPP API Documentation](https://docs
 | **Backup** | 4 | List, run, restore, auto-backup |
 | **Quarantine** | 4 | List, release, deny, get many |
 | **OneDrive** | 2 | Provision, add shortcut |
+| **Workflows** | 3 | Security posture (8 CIPP checks → indicators + gaps[]), BEC investigation (sign-ins/forwarding/OAuth), license audit; all support cross-tenant sweep |
 
 ## Example Usage
 
