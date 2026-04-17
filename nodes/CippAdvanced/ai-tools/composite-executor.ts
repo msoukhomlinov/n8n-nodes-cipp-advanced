@@ -230,6 +230,18 @@ async function securityPosture(
 	const s11 = await apiStep(ctx, 'tenant.listTenantDrift', 'GET', '/api/ListTenantDrift', { tenantFilter });
 	steps.push(s11);
 
+	// s12: OAuth user consent policy — best-effort; Apps category signal
+	// Requires Policy.Read.All on SAM app; 403 = permission not granted
+	const s12 = await apiStep(ctx, 'security.authorizationPolicy', 'GET', '/api/ListGraphRequest', {
+		tenantFilter,
+		Endpoint: 'policies/authorizationPolicy',
+	});
+	steps.push(s12);
+
+	// s13: Role assignments — best-effort; used to count Global Administrators
+	const s13 = await apiStep(ctx, 'identity.listRoles', 'GET', '/api/ListRoles', { tenantFilter });
+	steps.push(s13);
+
 	// ── Identity: MFA ────────────────────────────────────────────────
 	// Filter to active non-guest users so disabled/guest accounts don't skew coverage %
 	const allMfaUsers = toArray(s1.data);
@@ -432,6 +444,38 @@ async function securityPosture(
 		driftCount = toArray(s11.data).length;
 	}
 
+	// ── Apps: OAuth consent policy ─────────────────────────────────
+	let userConsentEnabled = false;
+	let consentPolicies: string[] = [];
+
+	if (s12.ok) {
+		const policyObj = toArray(s12.data)[0] as IDataObject | undefined;
+		if (policyObj) {
+			const policyIds = (policyObj.permissionGrantPolicyIdsAssignedToDefaultUserRole ?? []) as unknown[];
+			consentPolicies = Array.isArray(policyIds)
+				? policyIds.filter((p): p is string => typeof p === 'string')
+				: [];
+			// Non-empty array means users can consent to OAuth apps without admin approval
+			userConsentEnabled = consentPolicies.length > 0;
+		}
+	}
+
+	// ── Access: Global Administrator count ─────────────────────────
+	let globalAdminCount = 0;
+	let globalAdminUpns: string[] = [];
+
+	if (s13.ok) {
+		const roleItems = toArray(s13.data);
+		const globalAdminItems = roleItems.filter((r) => {
+			const name = String(r.displayName ?? r.DisplayName ?? r.RoleName ?? r.roleName ?? '');
+			return name.toLowerCase() === 'global administrator';
+		});
+		globalAdminCount = globalAdminItems.length;
+		globalAdminUpns = globalAdminItems
+			.map((r) => String(r.memberUPN ?? r.UserPrincipalName ?? r.upn ?? r.MemberEmail ?? r.memberEmail ?? ''))
+			.filter(Boolean);
+	}
+
 	// ── Gap Rules ────────────────────────────────────────────────────
 	const gaps: string[] = [];
 
@@ -521,6 +565,18 @@ async function securityPosture(
 		gaps.push(`${driftCount} tenant standard(s) in drift — review Standards page in CIPP`);
 	}
 
+	// Apps: OAuth user consent
+	if (s12.ok && userConsentEnabled) {
+		gaps.push(
+			'User consent for OAuth apps is enabled — users can grant third-party app access to their data without admin approval',
+		);
+	}
+
+	// Access: Global Admins
+	if (s13.ok && globalAdminCount > 5) {
+		gaps.push(`${globalAdminCount} Global Administrator accounts found (Microsoft recommends 2–5 for most tenants)`);
+	}
+
 	return {
 		composite: 'securityPosture',
 		tenantFilter,
@@ -543,6 +599,10 @@ async function securityPosture(
 					caPoliciesReportOnlyCount,
 					hasMfaRequirementPolicy,
 					hasLegacyAuthBlockPolicy,
+					userConsentEnabled,
+					consentPolicies,
+					globalAdminCount,
+					globalAdminUpns,
 				},
 				endpoint: {
 					defenderStatus,
