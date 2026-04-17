@@ -1631,7 +1631,6 @@ export const userFields: INodeProperties[] = [
 					'listUserCaPolicies',
 					'listUserDevices',
 					'listUserMailboxDetails',
-					'listUserMailboxRules',
 					'listTrustedBlockedSenders',
 				],
 			},
@@ -1646,6 +1645,23 @@ export const userFields: INodeProperties[] = [
 				description: 'Filter by a specific user',
 			},
 		],
+	},
+
+	// ── List User Mailbox Rules — UserID required ──
+	{
+		displayName: 'User ID or UPN',
+		name: 'mailboxRulesUserId',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: [RESOURCE],
+				operation: ['listUserMailboxRules'],
+			},
+		},
+		default: '',
+		placeholder: 'user@domain.com or GUID',
+		description: 'User ID or UPN of the mailbox to retrieve rules for. Required — the endpoint returns nothing without this.',
 	},
 
 	// ── List User Mailbox Details extra filter ──

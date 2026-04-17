@@ -1,5 +1,5 @@
 import type { ResourceConfig } from './types';
-export type { ResourceConfig, OperationDef, ParamDef } from './types';
+export type { ResourceConfig, OperationDef, CompositeOperationDef, AnyOperationDef, ParamDef } from './types';
 export { TENANT, P, N8N_METADATA_FIELDS, isWriteOperation } from './types';
 
 import { resourceConfig as alert } from './alert';
@@ -30,6 +30,7 @@ import { resourceConfig as tools } from './tools';
 import { resourceConfig as transport } from './transport';
 import { resourceConfig as user } from './user';
 import { resourceConfig as voice } from './voice';
+import { resourceConfig as workflows } from './workflows';
 
 export const RESOURCE_REGISTRY: Record<string, ResourceConfig> = {
 	alert,
@@ -60,4 +61,5 @@ export const RESOURCE_REGISTRY: Record<string, ResourceConfig> = {
 	transport,
 	user,
 	voice,
+	workflows,
 };

@@ -30,14 +30,35 @@ export interface OperationDef {
 	operationLabel?: string;
 }
 
+/** Named alias for the tenant descriptor shape used in both OperationDef and CompositeOperationDef */
+export type TenantDef = { location: 'qs' | 'body' | 'none'; field: string };
+
+/**
+ * Multi-step composite operation — makes several internal API calls and returns a shaped report.
+ * No method/endpoint: dispatch is handled entirely by composite-executor.ts.
+ */
+export interface CompositeOperationDef {
+	isComposite: true;
+	isWrite: boolean;
+	isList: false;
+	/** Used by schema-generator to add tenantFilter param. Use TENANT.qs for single-tenant ops, TENANT.none for cross-tenant sweep. */
+	tenant: TenantDef;
+	params: Record<string, ParamDef>;
+	description: string;
+}
+
+/** Union of all operation definition types */
+export type AnyOperationDef = OperationDef | CompositeOperationDef;
+
 export interface ResourceConfig {
 	label: string;
 	description: string;
-	operations: Record<string, OperationDef>;
+	operations: Record<string, AnyOperationDef>;
 	/**
 	 * Custom executor — overrides the generic executor for this entire resource.
 	 * Use for resources with non-standard API call patterns (e.g., Graph-routed requests).
 	 * Receives stripped params (no n8n metadata), tenant filter, and the operation definition.
+	 * Only called for non-composite operations (composites are dispatched before customExecutor).
 	 */
 	customExecutor?: (
 		context: ISupplyDataFunctions,

@@ -5,7 +5,9 @@ import type { ISupplyDataFunctions, IExecuteFunctions, IDataObject } from 'n8n-w
 import { wrapSuccess, wrapError, ERROR_TYPES, formatApiError } from './error-formatter';
 import { RESOURCE_REGISTRY } from './registry';
 import { N8N_METADATA_FIELDS } from './registry/types';
+import type { OperationDef } from './registry/types';
 import { cippApiRequest } from '../GenericFunctions';
+import { executeComposite } from './composite-executor';
 
 const N8N_METADATA_PREFIXES = ['Prompt__'];
 
@@ -53,6 +55,10 @@ export async function executeAiTool(
 		: 25;
 	delete params.limit;
 
+	// Extract failMode — must happen before param mapping so it isn't serialised into API calls
+	const failMode = ((params.failMode as string) ?? 'bestEffort') as 'fast' | 'bestEffort';
+	delete params.failMode;
+
 	// Check required params
 	for (const [paramName, paramDef] of Object.entries(opDef.params)) {
 		if (paramDef.required && (params[paramName] === undefined || params[paramName] === '')) {
@@ -62,9 +68,17 @@ export async function executeAiTool(
 		}
 	}
 
+	// Dispatch composite operations before generic HTTP path — composites make multiple internal calls
+	if ('isComposite' in opDef && opDef.isComposite) {
+		return executeComposite(context, resource, operation, tenantFilter, params, failMode);
+	}
+
+	// After composite guard: opDef is a regular OperationDef from here on
+	const regularOpDef = opDef as OperationDef;
+
 	// Delegate to customExecutor if the resource provides one (e.g., teamsShift Graph routing)
 	if (resourceConfig.customExecutor) {
-		return resourceConfig.customExecutor(context, operation, tenantFilter, params, opDef);
+		return resourceConfig.customExecutor(context, operation, tenantFilter, params, regularOpDef);
 	}
 
 	// ── Generic execution path ──────────────────────────────────────
@@ -73,18 +87,18 @@ export async function executeAiTool(
 		const qs: IDataObject = {};
 
 		// Merge hardcoded defaults first (before param mapping so params can override)
-		if (opDef.defaults?.body) Object.assign(body, opDef.defaults.body);
-		if (opDef.defaults?.qs) Object.assign(qs, opDef.defaults.qs);
+		if (regularOpDef.defaults?.body) Object.assign(body, regularOpDef.defaults.body);
+		if (regularOpDef.defaults?.qs) Object.assign(qs, regularOpDef.defaults.qs);
 
 		// Add tenant filter to the correct location
-		if (opDef.tenant.location === 'qs' && tenantFilter) {
-			qs[opDef.tenant.field] = tenantFilter;
-		} else if (opDef.tenant.location === 'body' && tenantFilter) {
-			body[opDef.tenant.field] = tenantFilter;
+		if (regularOpDef.tenant.location === 'qs' && tenantFilter) {
+			qs[regularOpDef.tenant.field] = tenantFilter;
+		} else if (regularOpDef.tenant.location === 'body' && tenantFilter) {
+			body[regularOpDef.tenant.field] = tenantFilter;
 		}
 
 		// Map params to body/qs based on registry
-		for (const [paramName, paramDef] of Object.entries(opDef.params)) {
+		for (const [paramName, paramDef] of Object.entries(regularOpDef.params)) {
 			const value = params[paramName];
 			if (value === undefined || value === null || value === '') continue;
 
@@ -113,7 +127,7 @@ export async function executeAiTool(
 
 		// Spread remaining params into body (handles optional fields not in registry)
 		for (const [key, value] of Object.entries(params)) {
-			if (key in opDef.params) continue;
+			if (key in regularOpDef.params) continue;
 			if (value !== undefined && value !== null && value !== '') {
 				body[key] = value;
 			}
@@ -122,12 +136,12 @@ export async function executeAiTool(
 		// Execute the API call
 		let result: IDataObject | IDataObject[];
 
-		if (opDef.isList) {
+		if (regularOpDef.isList) {
 			result = await cippApiRequest.call(
 				context as unknown as IExecuteFunctions,
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				opDef.method as any,
-				opDef.endpoint,
+				regularOpDef.method as any,
+				regularOpDef.endpoint,
 				Object.keys(body).length > 0 ? body : {},
 				qs,
 			);
@@ -135,8 +149,8 @@ export async function executeAiTool(
 			// Unwrap response — use per-operation config or standard wrappers
 			if (result && !Array.isArray(result)) {
 				const obj = result as IDataObject;
-				if (opDef.responseUnwrap && Array.isArray(obj[opDef.responseUnwrap])) {
-					result = obj[opDef.responseUnwrap] as IDataObject[];
+				if (regularOpDef.responseUnwrap && Array.isArray(obj[regularOpDef.responseUnwrap])) {
+					result = obj[regularOpDef.responseUnwrap] as IDataObject[];
 				} else if (Array.isArray(obj.Results)) {
 					result = obj.Results as IDataObject[];
 				} else if (Array.isArray(obj.value)) {
@@ -147,14 +161,14 @@ export async function executeAiTool(
 			}
 
 			const arr = Array.isArray(result) ? result : [];
-			const hasFilters = Object.keys(qs).some((k) => k !== opDef.tenant.field) ||
-				Object.keys(body).some((k) => k !== opDef.tenant.field);
+			const hasFilters = Object.keys(qs).some((k) => k !== regularOpDef.tenant.field) ||
+				Object.keys(body).some((k) => k !== regularOpDef.tenant.field);
 
 			// Filtered empty guard — prevents LLM fabrication
 			if (arr.length === 0 && hasFilters) {
 				const filtersUsed: Record<string, unknown> = {};
 				for (const [k, v] of Object.entries(qs)) {
-					if (k !== opDef.tenant.field) filtersUsed[k] = v;
+					if (k !== regularOpDef.tenant.field) filtersUsed[k] = v;
 				}
 				return JSON.stringify(wrapError(resource, operation, ERROR_TYPES.NO_RESULTS_FOUND,
 					`No ${resourceConfig.label} records matched the provided filters.`,
@@ -174,8 +188,8 @@ export async function executeAiTool(
 			result = await cippApiRequest.call(
 				context as unknown as IExecuteFunctions,
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				opDef.method as any,
-				opDef.endpoint,
+				regularOpDef.method as any,
+				regularOpDef.endpoint,
 				Object.keys(body).length > 0 ? body : {},
 				Object.keys(qs).length > 0 ? qs : {},
 			);
@@ -186,7 +200,7 @@ export async function executeAiTool(
 				|| (Array.isArray(result) && result.length === 0)
 				|| (typeof result === 'object' && !Array.isArray(result) && Object.keys(result).length === 0);
 
-			if (isMissing && !opDef.isWrite) {
+			if (isMissing && !regularOpDef.isWrite) {
 				return JSON.stringify(wrapError(resource, operation, ERROR_TYPES.ENTITY_NOT_FOUND,
 					`No ${resourceConfig.label} record found.`,
 					`Use cipp_${resource} with a list operation and filters to find the record.`));

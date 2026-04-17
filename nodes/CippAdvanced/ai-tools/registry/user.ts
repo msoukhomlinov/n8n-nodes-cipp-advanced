@@ -404,10 +404,10 @@ export const resourceConfig: ResourceConfig = {
 			isList: true,
 			tenant: TENANT.qs,
 			params: {
-				UserID: P.qs('User ID'),
-				userEmail: P.qs('User email'),
+				UserID: P.qs('User ID or UPN of the mailbox to retrieve rules for — required, endpoint returns nothing without this', true),
+				userEmail: P.qs('User email (alternative to UserID)'),
 			},
-			description: 'List mailbox rules for a user',
+			description: 'List inbox rules for a specific user mailbox. UserID or userEmail is required — the endpoint returns nothing without a mailbox identifier.',
 		},
 		listUserSettings: {
 			method: 'GET',

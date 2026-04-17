@@ -30,7 +30,7 @@ function getRuntimeRequire(): { runtimeReq: any; diagnostic: string | null } {
 			const anchorPath = require.resolve(anchor) as string;
 			// eslint-disable-next-line @n8n/community-nodes/no-restricted-imports
 			const { createRequire } = require('module') as {
-				createRequire: (filename: string) => NodeRequire;
+				createRequire: (filename: string) => (id: string) => unknown;
 			};
 			return { runtimeReq: createRequire(anchorPath), diagnostic: null };
 		} catch (e) {

@@ -411,9 +411,12 @@ export async function execute(
 	} else if (operation === 'listUserMailboxRules') {
 		const filters = context.getNodeParameter('userListFilters', i, {}) as IDataObject;
 		const emailFilter = context.getNodeParameter('mailboxRulesEmailFilter', i, {}) as IDataObject;
+		const mailboxRulesUserId = context.getNodeParameter('mailboxRulesUserId', i, '') as string;
 
 		const qs: IDataObject = { tenantFilter };
-		if (filters.UserID) qs.UserID = filters.UserID;
+		// Prefer top-level field, fall back to legacy collection field
+		const resolvedUserId = mailboxRulesUserId || (filters.UserID as string) || '';
+		if (resolvedUserId) qs.UserID = resolvedUserId;
 		if (emailFilter.userEmail) qs.userEmail = emailFilter.userEmail;
 
 		responseData = await listWithSlice(context, i, 'GET', '/api/ListUserMailboxRules', {}, qs,

@@ -1,21 +1,21 @@
 // ai-tools/description-builders.ts
 // Generates LLM-optimised tool descriptions from the operation registry.
 import { RESOURCE_REGISTRY } from './registry';
-import type { OperationDef } from './registry';
+import type { AnyOperationDef, OperationDef } from './registry';
 
 export function dateTimeReferenceSnippet(referenceUtc: string): string {
 	return `Reference: current UTC is ${referenceUtc}. `;
 }
 
 /** Classify an operation name into a safety category for description text */
-function getOperationSafety(opName: string, opDef: OperationDef): 'delete' | 'mutate' | 'read' {
+function getOperationSafety(opName: string, opDef: AnyOperationDef): 'delete' | 'mutate' | 'read' {
 	if (!opDef.isWrite) return 'read';
 	const lower = opName.toLowerCase();
 	if (lower.includes('delete') || lower.includes('remove') || lower === 'deny') return 'delete';
 	return 'mutate';
 }
 
-function describeOperation(opName: string, opDef: OperationDef): string {
+function describeOperation(opName: string, opDef: AnyOperationDef): string {
 	const requiredParams = Object.entries(opDef.params)
 		.filter(([, p]) => p.required)
 		.map(([name, p]) => {
@@ -42,7 +42,8 @@ function describeOperation(opName: string, opDef: OperationDef): string {
 		safetyNote = ' Confirm values with user before executing.';
 	}
 
-	return `- ${opName}: ${opDef.operationLabel ?? opDef.description}${reqSummary}${tenantNote}${listNote}${safetyNote}`;
+	const opLabel = ('operationLabel' in opDef ? (opDef as OperationDef).operationLabel : undefined) ?? opDef.description;
+	return `- ${opName}: ${opLabel}${reqSummary}${tenantNote}${listNote}${safetyNote}`;
 }
 
 export function buildUnifiedDescription(
@@ -84,7 +85,8 @@ export function buildUnifiedDescription(
 			const safetySuffix = safety === 'delete' ? ' [DESTRUCTIVE — confirm first]'
 				: safety === 'mutate' ? ' [confirm values]'
 				: '';
-			return `- ${op}: ${opDef.operationLabel ?? opDef.description}${safetySuffix}`;
+			const label = ('operationLabel' in opDef ? (opDef as OperationDef).operationLabel : undefined) ?? opDef.description;
+			return `- ${op}: ${label}${safetySuffix}`;
 		});
 		return [
 			`${dateTimeReferenceSnippet(referenceUtc)}${config.description}.`,
