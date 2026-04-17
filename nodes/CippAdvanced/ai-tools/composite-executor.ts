@@ -242,6 +242,14 @@ async function securityPosture(
 	const s13 = await apiStep(ctx, 'identity.listRoles', 'GET', '/api/ListRoles', { tenantFilter });
 	steps.push(s13);
 
+	// s14: Intune compliance policies — best-effort; device compliance signal
+	const s14 = await apiStep(ctx, 'policy.listCompliancePolicies', 'GET', '/api/ListCompliancePolicies', { tenantFilter });
+	steps.push(s14);
+
+	// s15: SharePoint external sharing settings — best-effort; data category signal
+	const s15 = await apiStep(ctx, 'tenant.listSharepointSettings', 'GET', '/api/ListSharepointSettings', { tenantFilter });
+	steps.push(s15);
+
 	// ── Identity: MFA ────────────────────────────────────────────────
 	// Filter to active non-guest users so disabled/guest accounts don't skew coverage %
 	const allMfaUsers = toArray(s1.data);
@@ -476,6 +484,40 @@ async function securityPosture(
 			.filter(Boolean);
 	}
 
+	// ── Device: Intune compliance policies ──────────────
+	let hasCompliancePolicies = false;
+	let compliancePoliciesCount = 0;
+
+	if (s14.ok) {
+		compliancePoliciesCount = toArray(s14.data).length;
+		hasCompliancePolicies = compliancePoliciesCount > 0;
+	}
+
+	// ── Data: SharePoint sharing ─────────────────
+	let sharingLevel: string | null = null;
+
+	if (s15.ok) {
+		const spSettings = toArray(s15.data)[0] as IDataObject | undefined;
+		if (spSettings) {
+			const raw = spSettings.SharingCapability ??
+				spSettings.sharingCapability ??
+				spSettings.ExternalSharingCapability ??
+				spSettings.externalSharingCapability;
+			if (typeof raw === 'string') {
+				sharingLevel = raw;
+			} else if (typeof raw === 'number') {
+				// Numeric enum: 0=Disabled, 1=ExistingExternalUserSharingOnly, 2=ExternalUserSharingOnly, 3=ExternalUserAndGuestSharing
+				const sharingMap: Record<number, string> = {
+					0: 'Disabled',
+					1: 'ExistingExternalUserSharingOnly',
+					2: 'ExternalUserSharingOnly',
+					3: 'ExternalUserAndGuestSharing',
+				};
+				sharingLevel = sharingMap[raw as number] ?? String(raw);
+			}
+		}
+	}
+
 	// ── Gap Rules ────────────────────────────────────────────────────
 	const gaps: string[] = [];
 
@@ -577,6 +619,18 @@ async function securityPosture(
 		gaps.push(`${globalAdminCount} Global Administrator accounts found (Microsoft recommends 2–5 for most tenants)`);
 	}
 
+	// Device: Compliance policies
+	if (s14.ok && !hasCompliancePolicies) {
+		gaps.push('No Intune compliance policies configured — device compliance state is unknown for this tenant');
+	}
+
+	// Data: SharePoint sharing
+	if (s15.ok && sharingLevel === 'ExternalUserAndGuestSharing') {
+		gaps.push(
+			'SharePoint external sharing allows Anyone links — unauthenticated access to tenant content is possible',
+		);
+	}
+
 	return {
 		composite: 'securityPosture',
 		tenantFilter,
@@ -609,6 +663,8 @@ async function securityPosture(
 					defenderOnboardedPct,
 					defenderOnboardedCount,
 					defenderDeviceCount,
+					hasCompliancePolicies,
+					compliancePoliciesCount,
 				},
 				email: {
 					hasAntiPhishingPolicy,
@@ -623,6 +679,9 @@ async function securityPosture(
 					bpaFailingCount,
 					bpaFailingItems,
 					driftCount,
+				},
+				data: {
+					sharingLevel,
 				},
 			},
 			gaps,
