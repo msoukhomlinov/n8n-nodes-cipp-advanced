@@ -35,6 +35,13 @@ interface SecureScoreMissedControl {
 	description: string;
 }
 
+interface BpaFailingItem {
+	report: unknown;
+	question: unknown;
+	value: unknown;
+	tenant: unknown;
+}
+
 /** Thrown by composite fns in fast mode when a step fails — caught by executeComposite */
 class CompositeStepError extends Error {
 	constructor(
@@ -215,6 +222,14 @@ async function securityPosture(
 	});
 	steps.push(s9);
 
+	// s10: BPA failing checks — best-effort; governance signal
+	const s10 = await apiStep(ctx, 'tenant.listBpa', 'GET', '/api/ListBPA', { tenantFilter });
+	steps.push(s10);
+
+	// s11: Tenant standards drift — best-effort; governance signal
+	const s11 = await apiStep(ctx, 'tenant.listTenantDrift', 'GET', '/api/ListTenantDrift', { tenantFilter });
+	steps.push(s11);
+
 	// ── Identity: MFA ────────────────────────────────────────────────
 	// Filter to active non-guest users so disabled/guest accounts don't skew coverage %
 	const allMfaUsers = toArray(s1.data);
@@ -389,6 +404,34 @@ async function securityPosture(
 		}
 	}
 
+	// ── Governance: BPA ──────────────────────────────────────────────
+	let bpaFailingCount = 0;
+	let bpaFailingItems: BpaFailingItem[] = [];
+
+	if (s10.ok) {
+		const allBpa = toArray(s10.data);
+		const failingBpa = allBpa.filter((item) => {
+			const score = item.Score ?? item.score;
+			if (score === 0 || score === '0') return true;
+			const passed = item.Passed ?? item.passed;
+			if (passed === false || passed === 'false') return true;
+			return false;
+		});
+		bpaFailingCount = failingBpa.length;
+		bpaFailingItems = failingBpa.slice(0, 10).map((item) => ({
+			report: item.Report ?? item.report ?? item.PolicyName ?? item.policyName,
+			question: item.Question ?? item.question ?? item.CheckName ?? item.checkName,
+			value: item.Value ?? item.value ?? item.CurrentValue ?? item.currentValue,
+			tenant: item.Tenant ?? item.tenant,
+		}));
+	}
+
+	// ── Governance: Drift ────────────────────────────────────────────
+	let driftCount = 0;
+	if (s11.ok) {
+		driftCount = toArray(s11.data).length;
+	}
+
 	// ── Gap Rules ────────────────────────────────────────────────────
 	const gaps: string[] = [];
 
@@ -464,6 +507,20 @@ async function securityPosture(
 		}
 	}
 
+	// Governance
+	if (s10.ok && bpaFailingCount > 0) {
+		const preview = bpaFailingItems
+			.slice(0, 3)
+			.map((i) => `${String(i.report ?? '')}: ${String(i.question ?? '')}`)
+			.filter(Boolean)
+			.join('; ');
+		const more = bpaFailingCount > 3 ? ` (+ ${bpaFailingCount - 3} more)` : '';
+		gaps.push(`${bpaFailingCount} BPA check(s) failing: ${preview}${more}`);
+	}
+	if (s11.ok && driftCount > 0) {
+		gaps.push(`${driftCount} tenant standard(s) in drift — review Standards page in CIPP`);
+	}
+
 	return {
 		composite: 'securityPosture',
 		tenantFilter,
@@ -501,6 +558,11 @@ async function securityPosture(
 					domainsWithDmarc,
 					domainsWithDkim,
 					domainsWithSpfHardFail,
+				},
+				governance: {
+					bpaFailingCount,
+					bpaFailingItems,
+					driftCount,
 				},
 			},
 			gaps,
