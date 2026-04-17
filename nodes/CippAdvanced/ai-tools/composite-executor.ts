@@ -323,17 +323,58 @@ async function securityPosture(
 	}
 
 	// ── Secure Score ─────────────────────────────────────────────────
-	let secureScore: { currentScore: number; maxScore: number; pct: number } | null = null;
+	type SecureScoreCategoryRollup = { maxScore: number; currentScore: number };
+	type SecureScoreMissedControl = { controlName: string; maxScore: number; description: string };
+	let secureScore: {
+		currentScore: number;
+		maxScore: number;
+		pct: number;
+		byCategory: Record<string, SecureScoreCategoryRollup>;
+		topMissedControls: SecureScoreMissedControl[];
+	} | null = null;
+
 	if (s9.ok) {
 		const scores = toArray(s9.data);
 		if (scores.length > 0) {
 			const latest = scores[0];
 			const current = typeof latest.currentScore === 'number' ? latest.currentScore : 0;
 			const max = typeof latest.maxScore === 'number' ? latest.maxScore : 0;
+
+			const byCategory: Record<string, SecureScoreCategoryRollup> = {};
+			const rawControlScores = Array.isArray(latest.controlScores) ? (latest.controlScores as IDataObject[]) : [];
+
+			for (const cs of rawControlScores) {
+				const cat = typeof cs.controlCategory === 'string' ? cs.controlCategory : 'Other';
+				const csMax = typeof cs.maxScore === 'number' ? cs.maxScore : 0;
+				const csUser = typeof cs.userScore === 'number' ? cs.userScore : 0;
+				if (!byCategory[cat]) byCategory[cat] = { maxScore: 0, currentScore: 0 };
+				byCategory[cat].maxScore += csMax;
+				byCategory[cat].currentScore += csUser;
+			}
+
+			const topMissedControls: SecureScoreMissedControl[] = rawControlScores
+				.filter((cs) => {
+					const userScore = typeof cs.userScore === 'number' ? cs.userScore : (cs.userScore ?? 1);
+					return userScore === 0;
+				})
+				.sort((a, b) => {
+					const aPct = typeof a.scoreInPercentage === 'number' ? a.scoreInPercentage : 0;
+					const bPct = typeof b.scoreInPercentage === 'number' ? b.scoreInPercentage : 0;
+					return bPct - aPct;
+				})
+				.slice(0, 5)
+				.map((cs) => ({
+					controlName: String(cs.controlName ?? ''),
+					maxScore: typeof cs.maxScore === 'number' ? cs.maxScore : 0,
+					description: String(cs.description ?? ''),
+				}));
+
 			secureScore = {
 				currentScore: current,
 				maxScore: max,
 				pct: max > 0 ? Math.round((current / max) * 100) : 0,
+				byCategory,
+				topMissedControls,
 			};
 		}
 	}
