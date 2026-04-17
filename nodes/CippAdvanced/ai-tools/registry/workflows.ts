@@ -37,9 +37,11 @@ const securityPosture: CompositeOperationDef = {
 		),
 	},
 	description:
-		'SECURITY POSTURE — runs 8 CIPP checks and returns observable indicators plus a ' +
+		'SECURITY POSTURE — runs 9 CIPP checks and returns observable indicators plus a ' +
 		'gaps[] array of plain-English findings (empty array on clean tenants, no numeric score). ' +
-		'Returns: indicators { identity { mfaCoveredPct, usersEvaluated, usersWithoutMfa[], ' +
+		'Returns: secureScore { currentScore, maxScore, pct } | null (Microsoft Secure Score via ' +
+		'ListGraphRequest; null if SecurityEvents.Read.All not granted or no data), ' +
+		'indicators { identity { mfaCoveredPct, usersEvaluated, usersWithoutMfa[], ' +
 		'usersWithoutMfaTotal, adminGaps[], basicAuthEnabled, basicAuthProtocols[] }, ' +
 		'access { caPoliciesCount, caPoliciesEnabledCount, caPoliciesReportOnlyCount, ' +
 		'hasMfaRequirementPolicy, hasLegacyAuthBlockPolicy }, ' +
