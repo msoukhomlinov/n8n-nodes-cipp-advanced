@@ -1631,7 +1631,6 @@ export const userFields: INodeProperties[] = [
 					'listUserCaPolicies',
 					'listUserDevices',
 					'listUserMailboxDetails',
-					'listUserMailboxRules',
 					'listTrustedBlockedSenders',
 				],
 			},
