@@ -196,6 +196,13 @@ async function securityPosture(
 	steps.push(s7);
 	const s8 = await apiStep(ctx, 'tenant.listDomainAnalyser', 'GET', '/api/ListDomainAnalyser', { tenantFilter });
 	steps.push(s8);
+	// s9: Microsoft Secure Score — best-effort; requires SecurityEvents.Read.All on SAM app
+	const s9 = await apiStep(ctx, 'security.secureScore', 'GET', '/api/ListGraphRequest', {
+		tenantFilter,
+		Endpoint: 'security/secureScores',
+		graphFilter: '$top=1',
+	});
+	steps.push(s9);
 
 	// ── Identity: MFA ────────────────────────────────────────────────
 	// Filter to active non-guest users so disabled/guest accounts don't skew coverage %
@@ -315,6 +322,22 @@ async function securityPosture(
 		}
 	}
 
+	// ── Secure Score ─────────────────────────────────────────────────
+	let secureScore: { currentScore: number; maxScore: number; pct: number } | null = null;
+	if (s9.ok) {
+		const scores = toArray(s9.data);
+		if (scores.length > 0) {
+			const latest = scores[0];
+			const current = typeof latest.currentScore === 'number' ? latest.currentScore : 0;
+			const max = typeof latest.maxScore === 'number' ? latest.maxScore : 0;
+			secureScore = {
+				currentScore: current,
+				maxScore: max,
+				pct: max > 0 ? Math.round((current / max) * 100) : 0,
+			};
+		}
+	}
+
 	// ── Gap Rules ────────────────────────────────────────────────────
 	const gaps: string[] = [];
 
@@ -395,6 +418,7 @@ async function securityPosture(
 		tenantFilter,
 		steps,
 		result: {
+			secureScore,
 			indicators: {
 				identity: {
 					mfaCoveredPct,
