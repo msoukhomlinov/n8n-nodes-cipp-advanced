@@ -516,6 +516,11 @@ async function becInvestigation(
 	});
 	steps.push(s5);
 
+	// s6: MDO security alerts — best-effort; requires Defender for Office 365 licensing
+	// 403 = no MDO license — fails gracefully
+	const s6 = await apiStep(ctx, 'security.mdoAlerts', 'GET', '/api/ExecMdoAlertsList', { tenantFilter });
+	steps.push(s6);
+
 	// Shape results
 	let signIns = toArray(s1.data);
 	if (userId) {
@@ -629,6 +634,35 @@ async function becInvestigation(
 	const atRiskCount = riskyUsers.filter((u) => u.riskState === 'atRisk').length;
 	const confirmedCompromisedCount = riskyUsers.filter((u) => u.riskState === 'confirmedCompromised').length;
 
+	// Parse s6 — MDO security alerts filtered to BEC/phishing-relevant signals
+	const BEC_ALERT_KEYWORDS = ['bec', 'phish', 'forward', 'suspicious inbox', 'impossible travel', 'mass download', 'oauth'];
+	type MdoAlert = {
+		title: unknown;
+		severity: unknown;
+		category: unknown;
+		status: unknown;
+		createdDateTime: unknown;
+	};
+	const mdoAlerts: MdoAlert[] = [];
+	if (s6.ok) {
+		const rawAlerts = toArray(s6.data);
+		const relevant = rawAlerts.filter((a) => {
+			const title = String(a.Title ?? a.title ?? a.AlertName ?? a.alertName ?? '').toLowerCase();
+			const category = String(a.Category ?? a.category ?? '').toLowerCase();
+			return BEC_ALERT_KEYWORDS.some((kw) => title.includes(kw) || category.includes(kw));
+		});
+		for (const a of relevant.slice(0, 10)) {
+			mdoAlerts.push({
+				title: a.Title ?? a.title ?? a.AlertName ?? a.alertName,
+				severity: a.Severity ?? a.severity,
+				category: a.Category ?? a.category,
+				status: a.Status ?? a.status,
+				createdDateTime: a.CreatedDateTime ?? a.createdDateTime ?? a.EventDateTime ?? a.eventDateTime,
+			});
+		}
+	}
+	const mdoAlertsCount = mdoAlerts.length;
+
 	const oauthApps = toArray(s3.data);
 	const HIGH_RISK_SCOPES = new Set([
 		'Mail.ReadWrite', 'MailboxSettings.ReadWrite', 'Mail.Send',
@@ -658,6 +692,8 @@ async function becInvestigation(
 		suspiciousOAuthApps,
 		riskyUsersCount,
 		riskyUsers,
+		mdoAlertsCount,
+		mdoAlerts,
 		knownLimitations: [
 			'Hidden inbox rules (created with -Hidden flag in EXO PowerShell) are not accessible via CIPP API or Microsoft Graph. Run Get-InboxRule -IncludeHidden in EXO PowerShell for complete rule inventory.',
 		],
