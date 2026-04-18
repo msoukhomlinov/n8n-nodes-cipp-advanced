@@ -766,28 +766,28 @@ export const tenantFields: INodeProperties[] = [
 				description: 'Controls the amount and shape of returned data',
 				options: [
 					{
-						name: 'Category Breakdown (1× — smallest, scores by category)',
-						value: 'categoryBreakdown',
-					},
-					{
-						name: 'Summary (2× — top-level scores + comparative averages)',
-						value: 'summary',
-					},
-					{
-						name: 'Implementation Status (15× — per-control status)',
-						value: 'implementationStatus',
-					},
-					{
-						name: 'Averaged (15× — single record averaged across history)',
+						name: 'Averaged (15× — Single Record Averaged Across History)',
 						value: 'averaged',
 					},
 					{
-						name: 'Slim (150× per entry — all controls, descriptions stripped)',
+						name: 'Category Breakdown (1× — Smallest, Scores by Category)',
+						value: 'categoryBreakdown',
+					},
+					{
+						name: 'Full (4000× per Entry — Complete Raw Data)',
+						value: 'full',
+					},
+					{
+						name: 'Implementation Status (15× — per-Control Status)',
+						value: 'implementationStatus',
+					},
+					{
+						name: 'Slim (150× per Entry — All Controls, Descriptions Stripped)',
 						value: 'slim',
 					},
 					{
-						name: 'Full (4000× per entry — complete raw data)',
-						value: 'full',
+						name: 'Summary (2× — Top-Level Scores + Comparative Averages)',
+						value: 'summary',
 					},
 				],
 			},
