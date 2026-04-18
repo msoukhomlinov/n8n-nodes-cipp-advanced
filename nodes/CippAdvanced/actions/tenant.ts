@@ -258,9 +258,15 @@ export async function execute(
 			'$top': effectiveTop(outputMode, historyCount),
 		};
 		const scoreData = await cippApiRequest.call(context, 'GET', '/api/ListGraphRequest', {}, qs);
-		const raw = Array.isArray(scoreData)
-			? scoreData as IDataObject[]
-			: (scoreData ? [scoreData as IDataObject] : []);
+		// ListGraphRequest proxies Microsoft Graph which wraps results in { value: [...] }
+		let raw: IDataObject[];
+		if (Array.isArray(scoreData)) {
+			raw = scoreData as IDataObject[];
+		} else if (scoreData && Array.isArray((scoreData as IDataObject).value)) {
+			raw = (scoreData as IDataObject).value as IDataObject[];
+		} else {
+			raw = scoreData ? [scoreData as IDataObject] : [];
+		}
 		responseData = applyOutputMode(raw, outputMode, includeDescriptions);
 
 	} else if (operation === 'listAppConsentRequests') {

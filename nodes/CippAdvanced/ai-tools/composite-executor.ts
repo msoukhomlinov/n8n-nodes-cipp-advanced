@@ -391,17 +391,17 @@ async function securityPosture(
 			for (const cs of rawControlScores) {
 				const cat = typeof cs.controlCategory === 'string' ? cs.controlCategory : 'Other';
 				const csMax = typeof cs.maxScore === 'number' ? cs.maxScore : 0;
-				const csUser = typeof cs.userScore === 'number' ? cs.userScore : 0;
+				const csScore = typeof cs.score === 'number' ? cs.score : 0;
 				if (!byCategory[cat]) byCategory[cat] = { maxScore: 0, currentScore: 0 };
 				byCategory[cat].maxScore += csMax;
-				byCategory[cat].currentScore += csUser;
+				byCategory[cat].currentScore += csScore;
 			}
 
 			const topMissedControls: SecureScoreMissedControl[] = rawControlScores
 				.filter((cs) => {
-					// Treat non-numeric userScore as achieved (safer default — don't flag unknowns as missed)
-					const userScore = typeof cs.userScore === 'number' ? cs.userScore : 1;
-					return userScore === 0;
+					// Treat non-numeric score as achieved (safer default — don't flag unknowns as missed)
+					const score = typeof cs.score === 'number' ? cs.score : 1;
+					return score === 0;
 				})
 				.sort((a, b) => {
 					const aMax = typeof a.maxScore === 'number' ? a.maxScore : 0;

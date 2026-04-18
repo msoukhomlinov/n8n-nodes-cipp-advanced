@@ -2,6 +2,13 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.3.1] - 2026-04-18
+
+### Fixed
+
+- **Tenant: Get Secure Score — all output modes returning zeros** — `ListGraphRequest` returns results wrapped in `{ value: [...] }` (Microsoft Graph OData envelope). The `getSecureScore` action was not unwrapping this envelope, so `raw[0]` was the wrapper object (`{ value: [...] }`) rather than a secureScore entry. `currentScore`, `maxScore`, and `controlScores` were all `undefined` → `0` / `[]` for every output mode. Fixed by applying the same `.value` array check used by the composite executor's `toArray()` helper
+- **Workflows: Security Posture — `byCategory` all zeros and `topMissedControls` always empty** — the `securityPosture` composite was reading `cs.userScore` to accumulate category current scores. `userScore` is not a field on the Microsoft Graph `controlScore` type; the correct field is `cs.score`. Because the field was always `undefined`, every category's `currentScore` accumulated to `0`, and the `topMissedControls` filter (which defaulted `undefined` to `1`, never matching `=== 0`) always produced an empty array. Fixed by reading `cs.score` in both the byCategory loop and the topMissedControls filter
+
 ## [1.3.0] - 2026-04-18
 
 ### Breaking Changes
