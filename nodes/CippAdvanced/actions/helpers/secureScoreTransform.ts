@@ -79,7 +79,7 @@ function toSlim(results: IDataObject[], includeDescriptions: boolean): IDataObje
 			...entry,
 			controlScores: includeDescriptions
 				? controls
-				: controls.map(({ description: _d, ...rest }) => rest as IDataObject),
+				: controls.map(({ description: _d, ...rest }) => rest as IDataObject), // eslint-disable-line @typescript-eslint/no-unused-vars
 		};
 	});
 }

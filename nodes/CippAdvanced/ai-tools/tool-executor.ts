@@ -86,6 +86,15 @@ export async function executeAiTool(
 		const body: IDataObject = {};
 		const qs: IDataObject = {};
 
+		// Extract local (post-processing) params — not sent to API
+		const localParams: Record<string, unknown> = {};
+		for (const [paramName, paramDef] of Object.entries(regularOpDef.params)) {
+			if (paramDef.location === 'local' && params[paramName] !== undefined) {
+				localParams[paramName] = params[paramName];
+				delete params[paramName];
+			}
+		}
+
 		// Merge hardcoded defaults first (before param mapping so params can override)
 		if (regularOpDef.defaults?.body) Object.assign(body, regularOpDef.defaults.body);
 		if (regularOpDef.defaults?.qs) Object.assign(qs, regularOpDef.defaults.qs);
@@ -101,6 +110,7 @@ export async function executeAiTool(
 		for (const [paramName, paramDef] of Object.entries(regularOpDef.params)) {
 			const value = params[paramName];
 			if (value === undefined || value === null || value === '') continue;
+			if (paramDef.location === 'local') continue;
 
 			const apiName = paramDef.apiName ?? paramName;
 			let processedValue = value;
@@ -161,6 +171,17 @@ export async function executeAiTool(
 			}
 
 			const arr = Array.isArray(result) ? result : [];
+
+			// Apply post-processing transform if defined (e.g. getSecureScore output modes)
+			if (regularOpDef.transform) {
+				const transformed = regularOpDef.transform(arr, localParams);
+				if (Array.isArray(transformed)) {
+					const items = (transformed as IDataObject[]).slice(0, limit);
+					return JSON.stringify(wrapSuccess(resource, operation, { items, count: items.length }));
+				}
+				return JSON.stringify(wrapSuccess(resource, operation, transformed));
+			}
+
 			const hasFilters = Object.keys(qs).some((k) => k !== regularOpDef.tenant.field) ||
 				Object.keys(body).some((k) => k !== regularOpDef.tenant.field);
 
