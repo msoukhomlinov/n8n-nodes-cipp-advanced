@@ -7,6 +7,7 @@ import {
 	parseJsonObjectPayload,
 	postAction,
 } from '../GenericFunctions';
+import { applyOutputMode, effectiveTop } from './helpers/secureScoreTransform';
 
 export async function execute(
 	context: IExecuteFunctions,
@@ -247,29 +248,20 @@ export async function execute(
 		// GET /api/ListGraphRequest → security/secureScores
 		const opts = context.getNodeParameter('secureScoreOptions', i, {}) as IDataObject;
 		const historyCount = Math.max(1, (opts.historyCount as number) ?? 1);
-		const includeControlProfiles = (opts.includeControlProfiles as boolean) ?? false;
+		const outputMode = (opts.outputMode as string) ?? 'summary';
+		const includeDescriptions = (opts.includeDescriptions as boolean) ?? false;
 
 		const tenantFilter = getTenantFilter(context, i);
 		const qs: IDataObject = {
 			tenantFilter,
 			Endpoint: 'security/secureScores',
-			'$top': historyCount,
+			'$top': effectiveTop(outputMode, historyCount),
 		};
 		const scoreData = await cippApiRequest.call(context, 'GET', '/api/ListGraphRequest', {}, qs);
-
-		if (!includeControlProfiles) {
-			responseData = scoreData;
-		} else {
-			const profileQs: IDataObject = {
-				tenantFilter,
-				Endpoint: 'security/secureScoreControlProfiles',
-			};
-			const profileData = await cippApiRequest.call(context, 'GET', '/api/ListGraphRequest', {}, profileQs);
-			responseData = {
-				scores: Array.isArray(scoreData) ? scoreData : [scoreData],
-				controlProfiles: Array.isArray(profileData) ? profileData : [profileData],
-			};
-		}
+		const raw = Array.isArray(scoreData)
+			? scoreData as IDataObject[]
+			: (scoreData ? [scoreData as IDataObject] : []);
+		responseData = applyOutputMode(raw, outputMode, includeDescriptions);
 
 	} else if (operation === 'listAppConsentRequests') {
 		// GET /api/ListAppConsentRequests — standard tenantFilter QS
