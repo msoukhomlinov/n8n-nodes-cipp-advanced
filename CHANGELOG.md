@@ -2,6 +2,19 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.3.0] - 2026-04-18
+
+### Breaking Changes
+- `getSecureScore` default output changed from raw API response (~4MB) to `summary` mode (~2KB). Existing workflows that rely on the raw response must set `outputMode` to `Full` in options.
+- `includeControlProfiles` option removed from `getSecureScore`. Use the `getSecureScoreControlProfiles` operation instead.
+
+### Added
+- `getSecureScore`: six output modes — `summary`, `categoryBreakdown`, `implementationStatus`, `averaged`, `slim`, `full`
+- `getSecureScore`: `includeDescriptions` option re-adds control descriptions to modes that strip them
+- `getSecureScore` (AI Tools): `outputMode` and `includeDescriptions` params with relative-size guidance
+- Internal: `P.localEnum` / `P.localBool` param helpers for post-processing directives not forwarded to API
+- Internal: `transform` hook on `OperationDef` for AI Tools executor post-processing
+
 ## [1.2.3] - 2026-04-18
 
 ### Fixed

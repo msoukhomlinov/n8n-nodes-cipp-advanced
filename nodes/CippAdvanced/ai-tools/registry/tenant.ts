@@ -1,5 +1,7 @@
+import type { IDataObject } from 'n8n-workflow';
 import type { ResourceConfig } from './types';
 import { P, TENANT } from './types';
+import { applyOutputMode } from '../../actions/helpers/secureScoreTransform';
 
 export const resourceConfig: ResourceConfig = {
 	label: 'Tenant',
@@ -167,12 +169,37 @@ export const resourceConfig: ResourceConfig = {
 			tenant: TENANT.qs,
 			defaults: { qs: { Endpoint: 'security/secureScores', '$top': 1 } },
 			params: {
-				'$top': P.qs('Number of historical score entries to return. Default: 1 (latest only)'),
+				'$top': P.qsNum(
+					'Number of historical days to fetch. Meaningful for slim, averaged, and full modes only — ' +
+					'other modes always use the latest entry. Default: 1.',
+				),
+				outputMode: P.localEnum(
+					'Controls response size. Default: summary. ' +
+					'Sizes relative to smallest (historyCount=1): ' +
+					'categoryBreakdown (1x — scores grouped by Identity/Apps/Data/Device), ' +
+					'summary (2x — top-level scores + comparative averages), ' +
+					'implementationStatus (15x — per-control name/category/score/status), ' +
+					'averaged (15x — single record averaged across $top days), ' +
+					'slim (150x per entry, scales with $top — all controls minus descriptions), ' +
+					'full (4000x per entry, scales with $top — complete raw response, use only when all detail needed).',
+					['summary', 'categoryBreakdown', 'implementationStatus', 'averaged', 'slim', 'full'],
+				),
+				includeDescriptions: P.localBool(
+					'Add verbose control descriptions to modes that strip them (slim/implementationStatus/averaged). ' +
+					'Adds ~500 bytes per control (~35KB for latest entry). ' +
+					'Ignored for summary/categoryBreakdown/full. Default: false.',
+				),
 			},
-			description: 'Get Microsoft Secure Score for a tenant. Returns currentScore, maxScore, ' +
-				'enabledServices, activeUserCount, and controlScores[] with per-control details. ' +
-				'Requires SecurityEvents.Read.All on the SAM app. ' +
-				'Use $top=N to retrieve N historical score entries.',
+			description:
+				'Get Microsoft Secure Score for a tenant. Default output: summary (~2KB — currentScore, maxScore, ' +
+				'scorePercent, enabledServices, averageComparativeScores). Use outputMode to control detail level. ' +
+				'Requires SecurityEvents.Read.All on the SAM app and Security Reader GDAP role.',
+			transform: (results: IDataObject[], localParams: Record<string, unknown>) =>
+				applyOutputMode(
+					results,
+					(localParams.outputMode as string) ?? 'summary',
+					(localParams.includeDescriptions as boolean) ?? false,
+				),
 		},
 		getSecureScoreControlProfiles: {
 			method: 'GET',

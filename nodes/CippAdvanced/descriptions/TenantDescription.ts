@@ -759,21 +759,55 @@ export const tenantFields: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: 'Output Mode',
+				name: 'outputMode',
+				type: 'options',
+				default: 'summary',
+				description: 'Controls the amount and shape of returned data',
+				options: [
+					{
+						name: 'Averaged (15× — Single Record Averaged Across History)',
+						value: 'averaged',
+					},
+					{
+						name: 'Category Breakdown (1× — Smallest, Scores by Category)',
+						value: 'categoryBreakdown',
+					},
+					{
+						name: 'Full (4000× per Entry — Complete Raw Data)',
+						value: 'full',
+					},
+					{
+						name: 'Implementation Status (15× — per-Control Status)',
+						value: 'implementationStatus',
+					},
+					{
+						name: 'Slim (150× per Entry — All Controls, Descriptions Stripped)',
+						value: 'slim',
+					},
+					{
+						name: 'Summary (2× — Top-Level Scores + Comparative Averages)',
+						value: 'summary',
+					},
+				],
+			},
+			{
 				displayName: 'History Count',
 				name: 'historyCount',
 				type: 'number',
 				default: 1,
-				description: 'Number of historical score entries to return (1 = latest only)',
+				description: 'Number of historical score entries to fetch (used by slim, averaged, full modes)',
 				typeOptions: {
 					minValue: 1,
 				},
 			},
 			{
-				displayName: 'Include Control Profiles',
-				name: 'includeControlProfiles',
+				displayName: 'Include Descriptions',
+				name: 'includeDescriptions',
 				type: 'boolean',
 				default: false,
-				description: 'Whether to also fetch control profile metadata alongside score data',
+				description:
+					'Whether to include verbose control descriptions (applies to slim/implementationStatus/averaged modes only)',
 			},
 		],
 	},
