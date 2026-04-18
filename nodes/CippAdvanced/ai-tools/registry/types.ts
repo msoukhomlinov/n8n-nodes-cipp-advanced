@@ -2,11 +2,12 @@
 // Shared interfaces for the operation registry.
 
 import type { ISupplyDataFunctions } from 'n8n-workflow';
+import type { IDataObject } from 'n8n-workflow';
 
 export interface ParamDef {
 	/** API field name if different from tool param name */
 	apiName?: string;
-	location: 'body' | 'qs';
+	location: 'body' | 'qs' | 'local';
 	type: 'string' | 'number' | 'boolean' | 'json';
 	required: boolean;
 	description: string;
@@ -28,6 +29,10 @@ export interface OperationDef {
 	responseUnwrap?: string;
 	/** Custom label for this operation in descriptions (overrides auto-generated) */
 	operationLabel?: string;
+	/** Post-processing transform applied after API response, before result wrapping.
+	 *  Return IDataObject for single-object output, IDataObject[] for list output.
+	 *  Receives raw unwrapped results array and any params declared with location 'local'. */
+	transform?: (results: IDataObject[], localParams: Record<string, unknown>) => IDataObject | IDataObject[];
 }
 
 /** Named alias for the tenant descriptor shape used in both OperationDef and CompositeOperationDef */
@@ -89,6 +94,10 @@ export const P = {
 		({ location: 'body', type: 'string', required, description: desc, enumValues: values }),
 	qsEnum: (desc: string, values: string[], required = false): ParamDef =>
 		({ location: 'qs', type: 'string', required, description: desc, enumValues: values }),
+	localEnum: (desc: string, values: string[], required = false): ParamDef =>
+		({ location: 'local', type: 'string', required, description: desc, enumValues: values }),
+	localBool: (desc: string, required = false): ParamDef =>
+		({ location: 'local', type: 'boolean', required, description: desc }),
 } as const;
 
 /** Standard tenant patterns */
