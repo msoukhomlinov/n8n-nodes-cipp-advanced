@@ -65,6 +65,28 @@ export class CippAdvancedApi implements ICredentialType {
 			description:
 				'How long to cache the tenant list in minutes. Newly onboarded tenants won\'t appear in the dropdown until the cache expires or n8n is restarted.',
 		},
+		{
+			displayName: 'Enable Secure Score Cache',
+			name: 'enableSecureScoreCache',
+			type: 'boolean',
+			default: true,
+			description:
+				'Cache raw Secure Score data per tenant. Allows different output modes to be re-run without re-fetching from the API.',
+		},
+		{
+			displayName: 'Secure Score Cache TTL (Minutes)',
+			name: 'secureScoreCacheTtl',
+			type: 'number',
+			typeOptions: { minValue: 1, maxValue: 1440 },
+			default: 60,
+			displayOptions: {
+				show: {
+					enableSecureScoreCache: [true],
+				},
+			},
+			description:
+				'How long to cache Secure Score data per tenant in minutes. Cached data is keyed by tenant and history depth ($top), so changing those parameters always triggers a fresh fetch.',
+		},
 	];
 
 	// Credential testing is handled by the node via credentialTest method

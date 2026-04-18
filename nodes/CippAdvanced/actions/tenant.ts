@@ -2,6 +2,7 @@ import type { IExecuteFunctions, IDataObject } from 'n8n-workflow';
 import { NodeOperationError } from 'n8n-workflow';
 import {
 	cippApiRequest,
+	getSecureScoreCached,
 	getTenantFilter,
 	listWithSlice,
 	parseJsonObjectPayload,
@@ -252,21 +253,8 @@ export async function execute(
 		const includeDescriptions = (opts.includeDescriptions as boolean) ?? false;
 
 		const tenantFilter = getTenantFilter(context, i);
-		const qs: IDataObject = {
-			tenantFilter,
-			Endpoint: 'security/secureScores',
-			'$top': effectiveTop(outputMode, historyCount),
-		};
-		const scoreData = await cippApiRequest.call(context, 'GET', '/api/ListGraphRequest', {}, qs);
-		// ListGraphRequest proxies Microsoft Graph which wraps results in { value: [...] }
-		let raw: IDataObject[];
-		if (Array.isArray(scoreData)) {
-			raw = scoreData as IDataObject[];
-		} else if (scoreData && Array.isArray((scoreData as IDataObject).value)) {
-			raw = (scoreData as IDataObject).value as IDataObject[];
-		} else {
-			raw = scoreData ? [scoreData as IDataObject] : [];
-		}
+		const top = effectiveTop(outputMode, historyCount);
+		const raw = await getSecureScoreCached.call(context, tenantFilter, top);
 		responseData = applyOutputMode(raw, outputMode, includeDescriptions);
 
 	} else if (operation === 'listAppConsentRequests') {

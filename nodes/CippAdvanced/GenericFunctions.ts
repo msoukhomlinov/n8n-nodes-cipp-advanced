@@ -11,7 +11,7 @@ import type {
 
 import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
-import type { IAuthToken, ICippCredentials, ITenant, ITenantCacheEntry } from './types';
+import type { IAuthToken, ICippCredentials, ISecureScoreCacheEntry, ITenant, ITenantCacheEntry } from './types';
 
 function validateCredentials(creds: IDataObject): ICippCredentials {
 	const baseUrl = creds.baseUrl as string;
@@ -23,7 +23,9 @@ function validateCredentials(creds: IDataObject): ICippCredentials {
 	}
 	const enableTenantCache = creds.enableTenantCache !== false;
 	const tenantCacheTtl = typeof creds.tenantCacheTtl === 'number' ? creds.tenantCacheTtl : 30;
-	return { baseUrl, tenantId, clientId, clientSecret, enableTenantCache, tenantCacheTtl };
+	const enableSecureScoreCache = creds.enableSecureScoreCache !== false;
+	const secureScoreCacheTtl = typeof creds.secureScoreCacheTtl === 'number' ? creds.secureScoreCacheTtl : 60;
+	return { baseUrl, tenantId, clientId, clientSecret, enableTenantCache, tenantCacheTtl, enableSecureScoreCache, secureScoreCacheTtl };
 }
 
 // Token cache to avoid repeated authentication calls
@@ -48,6 +50,19 @@ function evictExpiredTenantEntries(): void {
 	for (const [key, entry] of tenantCache) {
 		if (entry.expiresAt <= now) {
 			tenantCache.delete(key);
+		}
+	}
+}
+
+// Secure Score cache — raw unwrapped score arrays keyed by clientId:tenantId:tenantFilter:$top
+const secureScoreCache = new Map<string, ISecureScoreCacheEntry>();
+const MAX_SECURE_SCORE_CACHE_SIZE = 200;
+
+function evictExpiredSecureScoreEntries(): void {
+	const now = Date.now();
+	for (const [key, entry] of secureScoreCache) {
+		if (entry.expiresAt <= now) {
+			secureScoreCache.delete(key);
 		}
 	}
 }
@@ -189,10 +204,13 @@ export async function cippApiRequest(
 		const statusCode = err.statusCode || err.response?.status || err.response?.statusCode;
 
 		if (statusCode === 401) {
-			// Clear token + tenant cache on auth failure
+			// Clear token + tenant + secure score cache on auth failure
 			const cacheKey = getCacheKey(credentials);
 			tokenCache.delete(cacheKey);
 			tenantCache.delete(cacheKey);
+			for (const key of secureScoreCache.keys()) {
+				if (key.startsWith(cacheKey + ':')) secureScoreCache.delete(key);
+			}
 			throw new NodeApiError(this.getNode(), errorResponse, {
 				message: 'Authentication failed',
 				description:
@@ -277,6 +295,62 @@ export async function getTenantList(
 	}
 
 	return tenants;
+}
+
+/**
+ * Fetch raw secure score array for a tenant, using an in-memory cache.
+ * Cache is keyed by clientId:tenantId:tenantFilter:$top so different tenants
+ * and history depths each get their own entry. Output mode transforms are
+ * applied by the caller after this returns, so a single cache entry serves
+ * all output modes for the same underlying data.
+ */
+export async function getSecureScoreCached(
+	this: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+	tenantFilter: string,
+	top: number,
+): Promise<IDataObject[]> {
+	const credentials = validateCredentials(await this.getCredentials('cippAdvancedApi'));
+	const baseKey = getCacheKey(credentials);
+	const scoreKey = `${baseKey}:${tenantFilter}:${top}`;
+
+	if (credentials.enableSecureScoreCache) {
+		const cached = secureScoreCache.get(scoreKey);
+		if (cached && cached.expiresAt > Date.now()) {
+			return [...(cached.data as IDataObject[])];
+		}
+	}
+
+	const qs: IDataObject = {
+		tenantFilter,
+		Endpoint: 'security/secureScores',
+		'$top': top,
+	};
+	const scoreData = await cippApiRequest.call(this, 'GET', '/api/ListGraphRequest', {}, qs);
+
+	let raw: IDataObject[];
+	if (Array.isArray(scoreData)) {
+		raw = scoreData as IDataObject[];
+	} else if (scoreData && Array.isArray((scoreData as IDataObject).Results)) {
+		raw = (scoreData as IDataObject).Results as IDataObject[];
+	} else if (scoreData && Array.isArray((scoreData as IDataObject).value)) {
+		raw = (scoreData as IDataObject).value as IDataObject[];
+	} else {
+		raw = scoreData ? [scoreData as IDataObject] : [];
+	}
+
+	if (credentials.enableSecureScoreCache) {
+		const ttlMs = (credentials.secureScoreCacheTtl ?? 60) * 60000;
+		if (secureScoreCache.size >= MAX_SECURE_SCORE_CACHE_SIZE) {
+			evictExpiredSecureScoreEntries();
+			if (secureScoreCache.size >= MAX_SECURE_SCORE_CACHE_SIZE) {
+				const firstKey = secureScoreCache.keys().next().value;
+				if (firstKey !== undefined) secureScoreCache.delete(firstKey);
+			}
+		}
+		secureScoreCache.set(scoreKey, { data: raw, expiresAt: Date.now() + ttlMs });
+	}
+
+	return raw;
 }
 
 /**

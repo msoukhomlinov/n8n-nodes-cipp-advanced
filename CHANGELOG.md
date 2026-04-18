@@ -2,6 +2,16 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.3.2] - 2026-04-18
+
+### Added
+
+- **Secure Score cache** — raw score data cached in-memory per tenant and `$top` value (default 60 min TTL). Changing `outputMode` re-runs the local transform without re-fetching from the API. Configurable via two new credential fields: **Enable Secure Score Cache** (default: on) and **Secure Score Cache TTL** (default: 60 min, 1–1440). Cache invalidates on 401.
+
+### Fixed
+
+- **Tenant: Get Secure Score — all output modes returning zeros (again)** — previous fix handled `{ value: [...] }` unwrap but not `{ Results: [...] }`. CIPP's `ListGraphRequest` returns a `{ Results: [...] }` envelope (same as other CIPP list endpoints). The unwrap now checks `Results` before `value`, matching the priority order already used by `toArray()` in the composite executor and the AI Tools generic executor
+
 ## [1.3.1] - 2026-04-18
 
 ### Fixed

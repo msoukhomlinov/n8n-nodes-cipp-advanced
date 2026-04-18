@@ -5,6 +5,8 @@ export interface ICippCredentials {
 	clientSecret: string;
 	enableTenantCache?: boolean;
 	tenantCacheTtl?: number;
+	enableSecureScoreCache?: boolean;
+	secureScoreCacheTtl?: number;
 }
 
 export interface IAuthToken {
@@ -21,5 +23,10 @@ export interface ITenant {
 
 export interface ITenantCacheEntry {
 	tenants: ITenant[];
+	expiresAt: number;
+}
+
+export interface ISecureScoreCacheEntry {
+	data: unknown[];
 	expiresAt: number;
 }
