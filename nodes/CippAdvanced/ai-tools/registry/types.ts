@@ -1,8 +1,7 @@
 // ai-tools/registry/types.ts
 // Shared interfaces for the operation registry.
 
-import type { ISupplyDataFunctions } from 'n8n-workflow';
-import type { IDataObject } from 'n8n-workflow';
+import type { ISupplyDataFunctions, IDataObject } from 'n8n-workflow';
 
 export interface ParamDef {
 	/** API field name if different from tool param name */
