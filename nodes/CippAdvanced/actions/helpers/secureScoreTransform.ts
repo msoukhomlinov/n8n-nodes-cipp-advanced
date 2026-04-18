@@ -125,11 +125,12 @@ function toAveraged(results: IDataObject[], includeDescriptions: boolean): IData
 	});
 
 	return {
+		// API returns results newest-first: results[0] = most recent, results[n-1] = oldest
 		periodStart: last.createdDateTime,
 		periodEnd: first.createdDateTime,
 		daysAveraged: n,
 		currentScore: parseFloat(avgCurrent.toFixed(2)),
-		maxScore: parseFloat(avgMax.toFixed(1)),
+		maxScore: parseFloat(avgMax.toFixed(2)),
 		scorePercent: scorePercent(avgCurrent, avgMax),
 		controlScores,
 	};
