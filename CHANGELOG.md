@@ -2,6 +2,13 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.3.3] - 2026-07-09
+
+### Fixed
+
+- **AI Tools node breaks on pnpm-strict-isolated n8n (≥2.29)** — `zod` was declared only as a devDependency while `schema-generator.ts` value-imports it at registration time, causing `Cannot find module 'zod'` and preventing both nodes in this package from loading. Moved `zod` to `dependencies`.
+- **AI Tools runtime resolution on pnpm-isolated hosts** — `runtime.ts` now lazily resolves `DynamicStructuredTool` and `zod` from n8n's own module tree via `require.main`, filesystem anchor (LangChain only), and positive n8n-owned-tree `require.cache` anchor (`@n8n/n8n-nodes-langchain`, `n8n-workflow`, `n8n-core`). Preserves `instanceof ZodType` identity for `normalizeToolSchema`. No `__filename` self-resolution fallback. Added `@langchain/core` as optional peerDependency.
+
 ## [1.3.2] - 2026-04-18
 
 ### Added
