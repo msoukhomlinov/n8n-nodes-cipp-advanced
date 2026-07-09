@@ -1,0 +1,16 @@
+#!/bin/sh
+# Strip AI-tool attribution trailers injected by coding assistants (Cursor, Claude, etc.).
+# Enable once per clone: git config core.hooksPath .githooks
+#
+# prepare-commit-msg receives: $1 = commit message file, $2 = source, $3 = SHA-1 (if amending)
+
+COMMIT_MSG_FILE=$1
+
+# Portable in-place edit (macOS + Linux)
+if sed --version >/dev/null 2>&1; then
+	sed -i '/^Co-authored-by:.*\(Cursor\|Claude\|Copilot\|ChatGPT\|OpenAI\|Anthropic\|cursoragent\)/Id' "$COMMIT_MSG_FILE"
+	sed -i '/^Signed-off-by:.*\(Cursor\|Claude\|Copilot\|ChatGPT\|OpenAI\|Anthropic\|cursoragent\)/Id' "$COMMIT_MSG_FILE"
+else
+	sed -i '' '/^Co-authored-by:.*\(Cursor\|Claude\|Copilot\|ChatGPT\|OpenAI\|Anthropic\|cursoragent\)/Id' "$COMMIT_MSG_FILE"
+	sed -i '' '/^Signed-off-by:.*\(Cursor\|Claude\|Copilot\|ChatGPT\|OpenAI\|Anthropic\|cursoragent\)/Id' "$COMMIT_MSG_FILE"
+fi
