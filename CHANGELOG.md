@@ -2,6 +2,12 @@
 
 All notable changes to `n8n-nodes-cipp-advanced` will be documented in this file.
 
+## [1.3.4] - 2026-07-10
+
+### Changed
+
+- **`peerDependencies.n8n-workflow`** — aligned with the wide-open `"*"` convention used across other `n8n-nodes-*` community packages (no runtime behaviour change)
+
 ## [1.3.3] - 2026-07-09
 
 ### Fixed
