@@ -20,6 +20,8 @@ Desktop.ini
 # npm
 .npm-cache/
 .npm/
+.pnpm-store/
+pnpm-workspace.yaml
 *.log
 npm-debug.log*
 yarn-error.log*
